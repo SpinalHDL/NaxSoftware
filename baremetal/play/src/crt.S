@@ -1,5 +1,26 @@
 .globl _start
 _start:
+
+    addi x1, x0, 0x1 // 1
+    addi x2, x0, 0x2 // 2
+    addi x3, x1, 0x2 // 3
+    addi x4, x3, 0x4 // 7
+    add  x5, x1, x2  // 3
+    add  x6, x5, x5  // 6
+    add  x7, x4, x5  // 10
+    beq x3,x5, j1
+    addi x3, x0, -1;
+    j1:
+    beq x3,x5, j2
+    addi x3, x0, -2;
+    j2:
+    beq x3,x5, j3
+    addi x3, x0, -3;
+    nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;
+j3:
+    nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;
+    nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;
+
     addi  x0, x0, 0x00
     addi  x1, x0, 0x01
     addi  x2, x0, 0x02
