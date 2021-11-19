@@ -19,6 +19,15 @@ _start:
     nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;
 j3:
     nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;
+    addi x1, x0, 0x0
+    addi x2, x0, 0x0
+    addi x3, x0, 0x0
+    addi x4, x0, 0x0
+    addi x5, x0, 0x0
+    addi x6, x0, 0x0
+    addi x7, x0, 0x0
+    beq x0,x0, _start
+
     xor x1,x2,x3
     nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;
 
