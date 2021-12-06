@@ -43,20 +43,14 @@ OBJS := $(addprefix $(OBJDIR)/,$(OBJS))
 
 
 
-all: $(OBJDIR)/$(PROJ_NAME).elf $(OBJDIR)/$(PROJ_NAME).hex $(OBJDIR)/$(PROJ_NAME).asm $(OBJDIR)/$(PROJ_NAME).bin
+all: $(OBJDIR)/$(PROJ_NAME).elf $(OBJDIR)/$(PROJ_NAME).asm $(OBJDIR)/$(PROJ_NAME).bin
 	@echo "done"
 
 $(OBJDIR)/%.elf: $(OBJS) | $(OBJDIR)
 	$(RISCV_CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) $(LIBS)
 
-%.hex: %.elf
-	$(RISCV_OBJCOPY) -O ihex $^ $@
-
 %.bin: %.elf
 	$(RISCV_OBJCOPY) -O binary $^ $@
-
-%.v: %.elf
-	$(RISCV_OBJCOPY) -O verilog $^ $@
 
 %.asm: %.elf
 	$(RISCV_OBJDUMP) -S -d $^ > $@
