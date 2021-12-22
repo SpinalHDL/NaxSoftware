@@ -1,8 +1,41 @@
 .globl _start
 _start:
+    li x31, 4
+redo_A:
+    la x1, data
+    la x2, data + 0x10000
+    li x10, 0x99887700
+    li x11, 0x99887701
+    li x12, 0x99887702
+    li x13, 0x99887703
+    li x14, 0x99887704
+    li x15, 0x99887705
+    li x16, 0x99887706
+
+    sw x10, 0(x1)
+    sw x11, 4(x1)
+    sw x12, 0(x2)
+    sw x13, 4(x2)
+    lw x5, 0(x1)
+    lw x5, 4(x1)
+    lw x5, 0(x2)
+    lw x5, 4(x2)
+
+
+    sw x10, 0(x1)
+    sw x12, 0(x2)
+    lw x5, 4(x1)
+    lw x5, 4(x2)
+
+    addi x1, x1, 64
+    addi x2, x2, 64
+    addi x31, x31, -1
+    bnez x31, redo_A
+
+/*
     la x1, data
     li x31, 4
-redo:
+redo_A:
     lw x2, 0(x1)
     lw x2, 4(x1)
     lw x2, 8(x1)
@@ -58,13 +91,19 @@ redo:
     lw x2,12(x1)
     addi x1, x1, 64
     addi x31, x31, -1
-    bnez x31, redo
+    bnez x31, redo_A
+*/
+
 
 pass:
     nop
 
 fail:
     nop
+
+
+
+delay:
     nop
     nop
     nop
@@ -112,6 +151,33 @@ fail:
     nop
     nop
     nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    ret
+
 data:
     .word 0x27e91b60
     .word 0xa656bbbb
