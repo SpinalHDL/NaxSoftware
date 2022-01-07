@@ -1,6 +1,194 @@
 .globl _start
 _start:
 
+#include "../../driver/riscv_asm.h"
+#include "../../driver/sim_asm.h"
+#define delay_long() nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop
+
+#define trap_setup         \
+    la x1, 1f;              \
+    csrw mtvec, x1;         \
+    addi x1, x1, 0x123;      \
+    csrw mtval, x1;         \
+
+#define trap_handle        \
+    j fail;                 \
+    j fail;                 \
+    j fail;                 \
+    j fail;                 \
+1:                         \
+    csrr x1, mepc;          \
+    csrr x1, mcause;        \
+    csrr x1, mstatus;       \
+    csrr x1, mip;           \
+
+
+#define trap_handle_setup \
+    trap_handle    \
+    trap_setup     \
+
+
+
+    trap_setup
+    li x1, MIE_MEIE
+    csrw mie, x1
+    li x1, MSTATUS_MIE
+    csrw mstatus, x1
+    li x1, MACHINE_EXTERNAL_INTERRUPT_CTRL
+    li x2, 1
+    sw x2, 0(x1)   //Interrupt test
+    delay_long();
+    trap_handle
+
+    trap_setup
+    .word 0  //test decoding error
+    trap_handle
+
+    trap_setup
+    ecall          // ecall test
+    trap_handle
+
+    trap_setup
+    ebreak          // ebreak test
+    trap_handle
+
+    trap_setup
+    csrw 0xFFF, x0 // Trap unimplemented csrw
+    trap_handle
+
+    trap_setup
+    csrr x1, 0xFFF  // Trap unimplemented csrr
+    trap_handle
+
+
+    trap_setup // Trap unimplemented csrrw
+    csrrw x1, 0xFFF, x1
+    trap_handle
+
+    // Unaligned loads
+    trap_setup
+    la x1, data
+    lw x1, 1(x1)
+    trap_handle
+
+    trap_setup
+    la x1, data
+    lw x1, 2(x1)
+    trap_handle
+
+    trap_setup
+    la x1, data
+    lw x1, 3(x1)
+    trap_handle
+
+    trap_setup
+    la x1, data
+    lh x1, 1(x1)
+    trap_handle
+
+    trap_setup
+    la x1, BASE
+    lw x1, 1(x1)
+    trap_handle
+
+    // Unaligned stores
+    trap_setup
+    la x1, data
+    sw x1, 1(x1)
+    trap_handle
+
+    trap_setup
+    la x1, data
+    sw x1, 2(x1)
+    trap_handle
+
+    trap_setup
+    la x1, data
+    sw x1, 3(x1)
+    trap_handle
+
+    trap_setup
+    la x1, data
+    sh x1, 1(x1)
+    trap_handle
+
+    trap_setup
+    la x1, BASE
+    sw x1, 1(x1)
+    trap_handle
+
+    //Check no store side effects
+    la x1, data
+    lw x1, 0(x1)
+    lw x1, 4(x1)
+
+    // JALR clear bit 0
+    la x1, 2f+1
+    jalr x1, x1
+    nop
+2:  nop
+
+
+    trap_setup
+    li x1, MM_FAULT_ADDRESS
+    lw x1, 0(x1) //load fault
+    trap_handle
+
+    trap_setup
+    li x1, IO_FAULT_ADDRESS
+    lw x1, 0(x1) //mmio load fault
+    trap_handle
+
+    trap_setup
+    li x1, IO_FAULT_ADDRESS
+    sw x1, 0(x1) //mmio store fault
+    trap_handle
+
+    // mret test
+        la x1, 1f
+        csrw mepc, x1
+        mret
+        j fail
+        nop
+        nop
+    1:
+        csrr x1, mepc
+
+//TODO
+/*
+#ifndef RVC
+    trap_setup
+    la x1, data+2
+    jalr x1, x1
+    trap_handle
+#endif*/
+
+    j pass
+
+/*
+// CSR tests
+    li x31, 10
+t0:
+    li x10, 0x11223344
+    li x11, 0x22334455
+    li x12, 0x33445566
+    li x13, 0x44556677
+    la x14, data
+    csrw mscratch, x10
+    csrw sscratch, x11
+    csrr x1, mscratch
+    csrr x2, sscratch
+    csrrw x3, mscratch, x12
+    lw x4, 0(x14)
+    csrrw x3, mscratch, x4
+    csrr x5, mscratch
+
+
+    addi x31, x31, -1
+    bnez x31, t0
+    j pass
+*/
+/*
 // linked list chain
     li x31, 1000
     la x1, data
@@ -17,7 +205,7 @@ stats:
 j0:
     lw x1, 0(x1)
     bnez x1, j0
-    j pass
+    j pass*/
 
 /*
 
@@ -54,8 +242,8 @@ func:
 
 */
 
-
 /*
+// Easy to learn loop
 #define delay() nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop
     li x31, 100
 j0:
@@ -66,8 +254,11 @@ j0:
 j1:
     delay()
     addi x31, x31, -1
-    bnez x31, j0*/
+    bnez x31, j0
+*/
 
+
+//More branch prediction tests
 /*
     li x1, 1
     nop
