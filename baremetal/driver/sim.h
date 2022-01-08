@@ -5,13 +5,13 @@
 
 #include "sim_asm.h"
 
-int sim_putchar(int c){
+static int sim_putchar(int c){
     write_u32(c, 0x10000000);
     return c;
 }
 
 
-long __attribute__ ((noinline)) sim_time(){
+static long __attribute__ ((noinline)) sim_time(){
     return read_u32(CLINT_TIME);
 }
 

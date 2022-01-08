@@ -20,14 +20,26 @@ _start:
     csrr x1, mepc;          \
     csrr x1, mcause;        \
     csrr x1, mstatus;       \
+    csrr x1, mtval;           \
     csrr x1, mip;           \
-
 
 #define trap_handle_setup \
     trap_handle    \
     trap_setup     \
 
 
+    li x31, 10
+redoAll:
+
+    csrr x1, mstatus
+    csrr x1, mtvec
+    csrr x1, mepc
+    csrr x1, mtval
+    li x1, 0x1234FFFF
+    csrw mscratch, x1
+    csrr x1, mscratch
+    csrci mscratch, 3
+    csrr x1, mscratch
 
     trap_setup
     li x1, MIE_MEIE
@@ -39,6 +51,8 @@ _start:
     sw x2, 0(x1)   //Interrupt test
     delay_long();
     trap_handle
+    li x1, MACHINE_EXTERNAL_INTERRUPT_CTRL
+    sw x0, 0(x1)   //Interrupt test
 
     trap_setup
     .word 0  //test decoding error
@@ -144,15 +158,24 @@ _start:
     sw x1, 0(x1) //mmio store fault
     trap_handle
 
-    // mret test
-        la x1, 1f
-        csrw mepc, x1
-        mret
-        j fail
-        nop
-        nop
-    1:
-        csrr x1, mepc
+    trap_setup
+    li x1, MM_FAULT_ADDRESS
+    jalr x1 //fetch fault
+    trap_handle
+
+
+// mret test
+    la x1, 1f
+    csrw mepc, x1
+    la x1, 0x1800 //MPP
+    csrw mstatus, x1
+    mret
+    j fail
+    nop
+    nop
+1:
+    csrr x1, mepc
+
 
 //TODO
 /*
@@ -163,6 +186,8 @@ _start:
     trap_handle
 #endif*/
 
+    addi x31, x31, -1
+    bnez x31, redoAll
     j pass
 
 /*
