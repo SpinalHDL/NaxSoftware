@@ -1,6 +1,6 @@
 PROJ_NAME=freertosDemo
 
-DEMO?=sp_flop
+DEMO?=test1
 STANDALONE = ..
 FREERTOS=../../../FreeRTOS-mirror/FreeRTOS
 FREERTOS_DEMO=${FREERTOS}/Demo/Common
@@ -31,3 +31,22 @@ CFLAGS += -I${FREERTOS_RISCV}
 CFLAGS += -DportasmHANDLE_INTERRUPT=external_interrupt_handler
 
 include ../common/app.mk
+
+
+
+
+
+DEMOS= blocktim countsem EventGroupsDemo flop integer QPeek \
+      QueueSet recmutex semtest TaskNotify dynamic \
+      GenQTest PollQ QueueOverwrite QueueSetPolling sp_flop test1
+
+
+define LIST_DEMO
+$(1):
+	make all_arch DEMO=$$@ OBJDIR=${OBJDIR}/$$@
+endef
+$(foreach l,$(DEMOS),$(eval $(call LIST_DEMO,$(l))))
+
+all_demo: ${DEMOS}
+
+

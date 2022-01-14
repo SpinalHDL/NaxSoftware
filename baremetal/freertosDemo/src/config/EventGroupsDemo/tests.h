@@ -12,7 +12,7 @@
 #define CHECK_COUNT 3
 
 #include "EventGroupsDemo.h"
-
+#include "timers.h"
 
 void tickTimer( TimerHandle_t xTimer ){
 	//bsp_putString("event");

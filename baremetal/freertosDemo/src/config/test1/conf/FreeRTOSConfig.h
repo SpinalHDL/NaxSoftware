@@ -83,6 +83,8 @@
  *
  * See http://www.freertos.org/a00110.html.
  *----------------------------------------------------------*/
+#include "bsp.h"
+#undef configCPU_CLOCK_HZ
 
 #include <stdint.h>
 #include "portmacro.h"

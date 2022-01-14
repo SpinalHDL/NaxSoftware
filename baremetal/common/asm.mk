@@ -7,20 +7,9 @@ RISCV_CLIB=$(RISCV_PATH)$(RISCV_NAME)/lib/
 RISCV_CC=$(RISCV_PATH)/bin/$(RISCV_NAME)-gcc
 LDSCRIPT?=../common/asm.ld
 
-MABI=ilp32
-MARCH := rv32i
-ifeq ($(MULDIV),yes)
-	MARCH := $(MARCH)m
-endif
-ifeq ($(ATOMIC),yes)
-	MARCH := $(MARCH)a
-endif
-ifeq ($(COMPRESSED),yes)
-	MARCH := $(MARCH)c
-endif
-ifeq ($(FLOATING),yes)
-	MARCH := $(MARCH)fd
-endif
+MABI?=ilp32
+MARCH?=rv32i
+
 
 CFLAGS += -march=$(MARCH)  -mabi=$(MABI)
 LDFLAGS += -march=$(MARCH)  -mabi=$(MABI)
@@ -73,7 +62,7 @@ OBJS := $(OBJS:.s=.o)
 OBJS := $(addprefix $(OBJDIR)/,$(OBJS))
 
 
-all: $(OBJDIR)/$(PROJ_NAME).elf $(OBJDIR)/$(PROJ_NAME).asm $(OBJDIR)/$(PROJ_NAME).bin
+compile: $(OBJDIR)/$(PROJ_NAME).elf $(OBJDIR)/$(PROJ_NAME).asm $(OBJDIR)/$(PROJ_NAME).bin
 
 $(OBJDIR)/%.elf: $(OBJS) | $(OBJDIR)
 	@echo "LD $(PROJ_NAME)"
@@ -101,5 +90,24 @@ $(OBJDIR):
 
 clean:
 	@rm -rf $(OBJDIR)
+
+
+
+
+ARCHS=rv32im rv32imac
+rv32im=MARCH=rv32im MABI=ilp32
+rv32imac=MARCH=rv32imac MABI=ilp32
+
+define LIST_ARCH
+$(1):
+	make compile OBJDIR=${OBJDIR}/$(1)  $(2)
+endef
+$(foreach l,$(ARCHS),$(eval $(call LIST_ARCH,$(l),$(${l}))))
+
+all_arch: ${ARCHS}
+
+MAKEFLAGS += --no-print-directory
+
+
 
 .SECONDARY: $(OBJS)

@@ -88,14 +88,10 @@ static void prvCheckTimerCallback( TimerHandle_t xTimer );
 
 
 
-void  __attribute__ ((noinline)) c_fail(){
-    while(1);
-}
-void  __attribute__ ((noinline)) c_pass(){
-    while(1);
-}
 void exit(int error){
-    if(error) c_fail(); else c_pass();
+    extern void pass();
+    extern void fail();
+    if(error) fail(); else pass();
     while(1);
 }
 
@@ -132,7 +128,7 @@ static void prvCheckTimerCallback(__attribute__ ((unused)) TimerHandle_t xTimer 
 {
 	checkTime += 100;
 	totalTime += 100;
-    bsp_putString("Check tick\n");
+    //bsp_putString("Check tick\n");
 
 	if(checkTime < CHECK_PERIOD_MS){
 		return;

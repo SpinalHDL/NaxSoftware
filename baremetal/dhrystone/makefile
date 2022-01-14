@@ -1,6 +1,5 @@
 PROJ_NAME=dhrystone
 
-MULDIV=yes
 DEBUG=no
 BENCH=yes
 STANDALONE = ..

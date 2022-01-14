@@ -1,6 +1,14 @@
-    .section .init
-    .globl _start
-    .type _start,@function
+.section .init
+.globl _start
+.type _start,@function
+
+
+.globl pass
+.type pass,@function
+
+.globl fail
+.type fail,@function
+
 
 
 _start:
