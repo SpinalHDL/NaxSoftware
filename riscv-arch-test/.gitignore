@@ -1,0 +1,3 @@
+*.debug
+*.objdump
+*.readelf
