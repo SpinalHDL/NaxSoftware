@@ -3,7 +3,6 @@ _start:
 
 #include "../../driver/riscv_asm.h"
 #include "../../driver/sim_asm.h"
-#define delay_long() nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop
 
 #define trap_setup         \
     la x1, 1f;              \
@@ -28,446 +27,230 @@ _start:
     trap_setup     \
 
 
+
+#define supervisor_read \
+    csrr x1, sepc;          \
+    csrr x1, scause;        \
+    csrr x1, sstatus;       \
+    csrr x1, stval;           \
+    csrr x1, sip;
+
+#define machine_read  \
+    csrr x1, mepc;          \
+    csrr x1, mcause;        \
+    csrr x1, mstatus;       \
+    csrr x1, mtval;           \
+    csrr x1, mip;           \
+    supervisor_read
+
+#define user_read
+
+#define machine_to_supervisor       \
+    la x1,1f                       ;\
+    csrw mepc, x1                  ;\
+    li x1, MSTATUS_MPP_SUPERVISOR  ;\
+    csrw mstatus, x1               ;\
+    mret                           ;\
+    j fail                         ;\
+    j fail                         ;\
+    j fail                         ;\
+    j fail                         ;\
+1:                                 ;\
+    supervisor_read
+
+#define machine_to_user       \
+    la x1,1f                       ;\
+    csrw mepc, x1                  ;\
+    li x1, MSTATUS_MPP_USER        ;\
+    csrw mstatus, x1               ;\
+    mret                           ;\
+    j fail                         ;\
+    j fail                         ;\
+    j fail                         ;\
+    j fail                         ;\
+1:                                 ;\
+    user_read
+
+#define machine_setup_trap \
+    la x1, 2f              ;\
+    csrw mtvec,x1;
+
+#define machine_handle_trap \
+    j fail              ;\
+2:                      ;\
+    machine_read
+
+#define supervisor_setup_trap \
+    la x1, 3f              ;\
+    csrw stvec,x1;
+
+
+#define supervisor_handle_trap \
+    j fail              ;\
+3:                      ;\
+    supervisor_read
+
+
+#define supervisor_check \
+    supervisor_setup_trap \
+    csrr x1, mstatus;      \
+    supervisor_handle_trap \
+    supervisor_read
+
+#define supervisor_external_interrupt_set \
+    li x1, SUPERVISOR_EXTERNAL_INTERRUPT_CTRL; \
+    li x2, 1; \
+    sw x2, 0(x1);
+
+#define supervisor_external_interrupt_clear  \
+    li x1, SUPERVISOR_EXTERNAL_INTERRUPT_CTRL; \
+    sw x0, 0(x1);
+
+#define wait_interrupt  nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;j fail;
+#define delay_long  nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;
+
+
+#define machine_enable_supervisor_external_interrupt  \
+    li x1, 1 << CAUSE_SUPERVISOR_EXTERNAL;             \
+    csrw mie, x1;                                      \
+    li x1, MSTATUS_MIE ;                               \
+    csrw mstatus, x1 ;
+
+#define supervisor_enable_supervisor_external_interrupt  \
+    li x1, 1 << CAUSE_SUPERVISOR_EXTERNAL;             \
+    csrw sie, x1;                                      \
+    li x1, MSTATUS_SIE ;                               \
+    csrw sstatus, x1 ;
+
+
+#define xix_read \
+    csrr x1, mip; \
+    csrr x1, sip; \
+    csrr x1, mie; \
+    csrr x1, sie;
+
+
+
     li x31, 10
 redoAll:
-    nop
-    nop
-    nop
-    csrr x1, minstret
-    nop
-    nop
-    nop
-    csrr x1, minstret
-    csrr x1, minstreth
-    li x1, 0x12345678
-    csrw minstret,x1
-    csrr x1, minstret
-    csrr x1, minstreth
-    li x1, 0xAABBCCDD
-    csrw minstreth,x1
-    csrr x1, minstret
-    csrr x1, minstreth
+    li x1, CLINT_CMP
+    li x2, -1
+    sw x2, 0(x1)
+    machine_read
 
-    csrr x1, mcycle
-    csrr x1, mcycle
+    // <3 MIP/SIP hell checks <3
+    csrw mie, x0
+    csrw mip, x0
+    xix_read
+    li x2, (1 <<CAUSE_MACHINE_SOFTWARE) | (1 << CAUSE_MACHINE_TIMER) | (1 << CAUSE_MACHINE_EXTERNAL) | (1 << CAUSE_SUPERVISOR_SOFTWARE) | (1 << CAUSE_SUPERVISOR_TIMER) | (1 << CAUSE_SUPERVISOR_EXTERNAL)
 
-    csrwi mhpmevent3, ICACHE_REFILL
-    csrwi mhpmevent4, DCACHE_REFILL
-    csrwi mhpmevent5, DCACHE_WRITEBACK
-    csrwi mhpmevent6, BRANCH_MISS
+    csrw mie, x2;     xix_read;    csrw mie, x0
+    csrw sie, x2;     xix_read;    csrw sie, x0
+    csrw mip, x2;     xix_read;    csrw mip, x0
+    csrw sip, x2;     xix_read;    csrw sip, x0
 
-    li x3, PUTC
-    li x4, PUT_HEX
-    li x5, '-'
-    li x6, '\n'
-    sw x5, 0(x3)
-    sw x6, 0(x3)
-
-    csrr x1, mhpmcounter3; sw x1, 0(x4); sw x6, 0(x3)
-    csrr x1, mhpmcounter4; sw x1, 0(x4); sw x6, 0(x3)
-    csrr x1, mhpmcounter5; sw x1, 0(x4); sw x6, 0(x3)
-    csrr x1, mhpmcounter6; sw x1, 0(x4); sw x6, 0(x3)
-
-    csrr x1, mstatus
-    csrr x1, mtvec
-    csrr x1, mepc
-    csrr x1, mtval
-    li x1, 0x1234FFFF
-    csrw mscratch, x1
-    csrr x1, mscratch
-    csrci mscratch, 3
-    csrr x1, mscratch
-
-    trap_setup
-    li x1, MIE_MEIE
-    csrw mie, x1
-    li x1, MSTATUS_MIE
-    csrw mstatus, x1
-    li x1, MACHINE_EXTERNAL_INTERRUPT_CTRL
-    li x2, 1
-    sw x2, 0(x1)   //Interrupt test
-    delay_long();
-    trap_handle
-    li x1, MACHINE_EXTERNAL_INTERRUPT_CTRL
-    sw x0, 0(x1)   //Interrupt test
-
-    trap_setup
-    .word 0  //test decoding error
-    trap_handle
-
-    trap_setup
-    ecall          // ecall test
-    trap_handle
-
-    trap_setup
-    ebreak          // ebreak test
-    trap_handle
-
-    trap_setup
-    csrw 0xFFF, x0 // Trap unimplemented csrw
-    trap_handle
-
-    trap_setup
-    csrr x1, 0xFFF  // Trap unimplemented csrr
-    trap_handle
+    li x1, -1
+    csrw mideleg, x1
+    csrw mie, x2;     xix_read;    csrw mie, x0
+    csrw sie, x2;     xix_read;    csrw sie, x0
+    csrw mip, x2;     xix_read;    csrw mip, x0
+    csrw sip, x2;     xix_read;    csrw sip, x0
+    csrw mideleg, x0
 
 
-    trap_setup // Trap unimplemented csrrw
-    csrrw x1, 0xFFF, x1
-    trap_handle
+
+    //Go to supervisor and ecall to machine
+    machine_setup_trap
+    machine_to_supervisor
+    ecall
+    machine_handle_trap
 
 
-    trap_setup
-    csrw mhartid, x1  // Trap read only csr
-    trap_handle
-
-    // Unaligned loads
-    trap_setup
-    la x1, data
-    lw x1, 1(x1)
-    trap_handle
-
-    trap_setup
-    la x1, data
-    lw x1, 2(x1)
-    trap_handle
-
-    trap_setup
-    la x1, data
-    lw x1, 3(x1)
-    trap_handle
-
-    trap_setup
-    la x1, data
-    lh x1, 1(x1)
-    trap_handle
-
-    trap_setup
-    la x1, BASE
-    lw x1, 1(x1)
-    trap_handle
-
-    // Unaligned stores
-    trap_setup
-    la x1, data
-    sw x1, 1(x1)
-    trap_handle
-
-    trap_setup
-    la x1, data
-    sw x1, 2(x1)
-    trap_handle
-
-    trap_setup
-    la x1, data
-    sw x1, 3(x1)
-    trap_handle
-
-    trap_setup
-    la x1, data
-    sh x1, 1(x1)
-    trap_handle
-
-    trap_setup
-    la x1, BASE
-    sw x1, 1(x1)
-    trap_handle
-
-    //Check no store side effects
-    la x1, data
-    lw x1, 0(x1)
-    lw x1, 4(x1)
-
-    // JALR clear bit 0
-    la x1, 2f+1
-    jalr x1, x1
-    nop
-2:  nop
+    //Go to user and ecall to machine
+    machine_setup_trap
+    machine_to_user
+    ecall
+    machine_handle_trap
 
 
-    trap_setup
-    li x1, MM_FAULT_ADDRESS
-    lw x1, 0(x1) //load fault
-    trap_handle
 
-    trap_setup
-    li x1, IO_FAULT_ADDRESS
-    lw x1, 0(x1) //mmio load fault
-    trap_handle
-
-    trap_setup
-    li x1, IO_FAULT_ADDRESS
-    sw x1, 0(x1) //mmio store fault
-    trap_handle
-
-    trap_setup
-    li x1, MM_FAULT_ADDRESS
-    jalr x1 //fetch fault
-    trap_handle
+    //Go to user, ecall to supervisor, ecall to machine
+    li x1, 1 << CAUSE_UCALL
+    csrw medeleg, x1
+    machine_setup_trap
+    supervisor_setup_trap
+    machine_to_user
+    ecall
+    supervisor_handle_trap
+    supervisor_check
+    ecall
+    machine_handle_trap
+    csrw medeleg, x0
 
 
-// mret test
-    la x1, 1f
-    csrw mepc, x1
-    la x1, 0x1800 //MPP
-    csrw mstatus, x1
-    mret
-    j fail
-    nop
-    nop
-1:
-    csrr x1, mepc
+
+    //Go to user, external interrupt supervisor to machine
+    machine_enable_supervisor_external_interrupt
+    machine_setup_trap
+    machine_to_user
+    supervisor_external_interrupt_set
+    wait_interrupt
+    machine_handle_trap
+    supervisor_external_interrupt_clear
+    csrw mstatus, x0
+
+    //Go to user, external interrupt machine to supervisor, ecall to machine
+    machine_enable_supervisor_external_interrupt
+    li x1, 1 << CAUSE_SUPERVISOR_EXTERNAL
+    csrw mideleg, x1
+    machine_setup_trap
+    machine_to_user
+    supervisor_external_interrupt_set
+    wait_interrupt
+    supervisor_handle_trap
+    supervisor_check
+    ecall
+    machine_handle_trap
+    supervisor_external_interrupt_clear
+    csrw mstatus, x0
+    csrw mideleg, x0
 
 
-//TODO
-/*
-#ifndef RVC
-    trap_setup
-    la x1, data+2
-    jalr x1, x1
-    trap_handle
-#endif*/
+    // machine mode not being interrupted by supervisor interrupt
+    supervisor_enable_supervisor_external_interrupt
+    supervisor_external_interrupt_set
+    delay_long
+    supervisor_external_interrupt_clear
+    csrw mie, x0
+    csrw mstatus, x0
+
+    // machine to supervisor software interrupt
+    li x1, 1 << CAUSE_SUPERVISOR_SOFTWARE
+    csrw mideleg, x1
+    csrw mip, x1
+    machine_setup_trap
+    machine_to_supervisor
+    supervisor_setup_trap
+    li x1, 1 << CAUSE_SUPERVISOR_SOFTWARE
+    csrw sie, x1
+    csrwi sstatus, MSTATUS_SIE
+    wait_interrupt
+    supervisor_handle_trap
+    ecall
+    machine_handle_trap
+    csrw mstatus, x0
+    csrw mideleg, x0
 
     addi x31, x31, -1
     bnez x31, redoAll
     j pass
 
-/*
-// CSR tests
-    li x31, 10
-t0:
-    li x10, 0x11223344
-    li x11, 0x22334455
-    li x12, 0x33445566
-    li x13, 0x44556677
-    la x14, data
-    csrw mscratch, x10
-    csrw sscratch, x11
-    csrr x1, mscratch
-    csrr x2, sscratch
-    csrrw x3, mscratch, x12
-    lw x4, 0(x14)
-    csrrw x3, mscratch, x4
-    csrr x5, mscratch
-
-
-    addi x31, x31, -1
-    bnez x31, t0
-    j pass
-*/
-/*
-// linked list chain
-    li x31, 1000
-    la x1, data
-i0:
-    addi x2, x1, 4
-    sw x2, 0(x1)
-    mv x1, x2
-    addi x31, x31, -1
-    bnez x31, i0
-    sw x0, 0(x1)
-
-stats:
-    la x1, data
-j0:
-    lw x1, 0(x1)
-    bnez x1, j0
-    j pass*/
-
-/*
-
-//Store -> load hazard prediction
-#define delay() nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop
-    li x31, 100
-    la x30, data
-    sw x30, 4(x30)
-j0:
-    delay()
-    lw x1, 4(x30)
-    sw x31, 0(x1)
-    lw x2, 0(x30)
-    addi x31, x31, -1
-    bnez x31, j0
-    j pass
-
-*/
-
-/*
-#define delay() nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop
-    li x31, 100
-j0:
-    delay()
-    call func
-    delay()
-    addi x31, x31, -1
-    bnez x31, j0
-    j pass
-
-func:
-    delay()
-    ret
-
-*/
-
-/*
-// Easy to learn loop
-#define delay() nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop
-    li x31, 100
-j0:
-    delay()
-    andi x1, x31, 3
-    bnez x1, j1
-    delay()
-j1:
-    delay()
-    addi x31, x31, -1
-    bnez x31, j0
-*/
-
-
-//More branch prediction tests
-/*
-    li x1, 1
-    nop
-    nop
-    beq x0, x0, a1
-a1:
-    beq x0, x0, a2
-    nop
-a2:
-    beq x0, x0, a3
-    nop
-    nop
-a6:
-    beq x0, x0, a7
-    nop
-    nop
-a5:
-    beq x0, x0, a6
-    nop
-    nop
-a4:
-    beq x0, x0, a5
-    nop
-a3:
-    beq x0, x0, a4
-    
-a7:
-    nop
-    nop
-    beq x0, x1, b1
-    j b1
-b1:
-    beq x0, x1, b2
-    j b2
-    nop
-b2:
-    beq x0, x1, b3
-    j b3
-    nop
-    nop
-b6:
-    beq x0, x1, b7
-    j b7
-    nop
-    nop
-b5:
-    beq x0, x1, b6
-    j b6
-    nop
-    nop
-b4:
-    beq x0, x1, b5
-    j b5
-    nop
-b3:
-    beq x0, x1, b4
-    j b4
-
-b7:*/
-
-pass:
-    nop
-
 fail:
     nop
-
-
-
-delay:
     nop
+pass:
     nop
     nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    ret
 
 data:
     .word 0x27e91b60
