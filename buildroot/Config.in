@@ -1,0 +1,2 @@
+source "$BR2_EXTERNAL_NAXRISCV_SIM_PATH/package/opensbi-ext/Config.in"
+
