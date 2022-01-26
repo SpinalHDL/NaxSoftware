@@ -8,8 +8,8 @@
 / {
     #address-cells = <0x1>;
     #size-cells = <0x1>;
-    compatible = "spinal,vexriscv";
-    model = "spinal,vexriscv_saxon";
+    compatible = "spinal,naxriscv";
+    model = "spinal,naxriscv_sim";
 
     chosen {
         bootargs = "rootwait console=hvc0 earlycon=sbi root=/dev/ram0 init=/sbin/init";
