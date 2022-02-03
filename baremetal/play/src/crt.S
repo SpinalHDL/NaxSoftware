@@ -27,18 +27,64 @@ _start:
     trap_handle    \
     trap_setup     \
 
+    li x31, 50
+redoAll:
+    li x2, 1
+    div x1, x31, x2
+    la x2, data
+    sw x1, 0(x2)
+    lw x1, 0(x2)
+    nop
+    nop
 
+
+
+   /* li x1, 5123
+    li x2, 41
+    div x1, x1, x2
+    la x2, data
+    sw x1, 0(x2)
+    lw x1, 0(x2)
+    nop*/
+
+
+    addi x31, x31, -1
+    bnez x31, redoAll
+    j pass
+
+
+
+/*
+    li x31, 1023
+    la x30, data
+loop:
+    lw x1, 0(x30)
+    srli x2, x31, 1
+    andi x2, x2, 64
+    add  x30, x30, x2
+    addi x31, x31, -1
+    bnez x31, loop
+*/
+
+ /*   nop
+    nop
+    wfi
+    nop
+    nop
+    j pass*/
+
+/*
 loop:
     la x2, GETC
     lw x1, 0(x2)
     blt x1, x0, loop
     la x2, PUTC
     sw x1, 0(x2)
-    j loop
+    j loop*/
 
 
 
-
+/*
     li x31, 10
 redoAll:
 
@@ -46,7 +92,7 @@ redoAll:
     addi x31, x31, -1
     bnez x31, redoAll
     j pass
-
+*/
 /*
 // CSR tests
     li x31, 10
