@@ -28,8 +28,9 @@ OUTFLAG= -o
 CC = riscv64-unknown-elf-gcc
 # Flag : CFLAGS
 #	Use this flag to define compiler options. Note, you can add compiler options from the command line using XCFLAGS="other flags"
-PORT_CFLAGS = -march=${MARCH} -mabi=${MABI} -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast -I../driver
-PORT_CFLAGS += -DPERFORMANCE_RUN=1 -O3 -fno-common -funroll-loops -finline-functions -falign-functions=16 -falign-jumps=4 -falign-loops=4 -finline-limit=1000 -fno-if-conversion2 -fselective-scheduling -fno-tree-dominator-opts -fno-reg-struct-return -fno-rename-registers --param case-values-threshold=8 -fno-crossjumping -freorder-blocks-and-partition -fno-tree-loop-if-convert -fno-tree-sink -fgcse-sm -fno-strict-overflow
+PORT_CFLAGS =  -DPERFORMANCE_RUN=1  -march=${MARCH} -mabi=${MABI} -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast -I../driver
+PORT_CFLAGS += -O3 -fno-common -funroll-loops -finline-functions -falign-functions=16 -falign-jumps=4 -falign-loops=4 -finline-limit=1000 -fno-if-conversion2 -fselective-scheduling -fno-reg-struct-return -fno-rename-registers --param case-values-threshold=8 -fno-crossjumping -freorder-blocks-and-partition -fno-tree-loop-if-convert -fno-tree-sink -fgcse-sm -fno-strict-overflow
+#PORT_CFLAGS += -O3 -funroll-all-loops -funswitch-loops -fgcse-after-reload -fpredictive-commoning -mtune=sifive-7-series -finline-functions -fipa-cp-clone -falign-functions=8 -falign-loops=8 -falign-jumps=8 --param max-inline-insns-auto=20
 
 FLAGS_STR = "$(PORT_CFLAGS) $(XCFLAGS) $(XLFLAGS) $(LFLAGS_END)"
 CFLAGS = $(PORT_CFLAGS) -I$(PORT_DIR) -I. -DFLAGS_STR=\"$(FLAGS_STR)\"
