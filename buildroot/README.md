@@ -6,6 +6,7 @@ cd $NAXRISCV/..
 git clone https://github.com/buildroot/buildroot.git --branch master
 cd buildroot
 git checkout 9ef54b7d
+$NAX_SOFTWARE/buildroot/naxriscv_sim_setup.sh rv32ima
 make BR2_EXTERNAL=$NAX_SOFTWARE/buildroot/ naxriscv_sim_defconfig
 make
 ```
