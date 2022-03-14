@@ -1,1 +1,5 @@
 images
+configs/naxriscv_sim_defconfig
+boards/naxriscv_sim/linux/linux.config
+boards/naxriscv_sim/linux/linux.dts
+boards/naxriscv_sim/opensbi/config.mk
