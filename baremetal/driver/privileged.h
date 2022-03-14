@@ -91,6 +91,7 @@
     supervisor_read
 
 
+
 #define supervisor_check \
     supervisor_setup_trap \
     csrr x1, mstatus;      \
@@ -135,7 +136,7 @@
 #define supervisor_trap_failure \
     la x1, 1f;                  \
     csrw stvec, x1;             \
-    j 4f                        \
+    j 4f;                        \
 1:                              \
     nop;                        \
     j fail;                     \

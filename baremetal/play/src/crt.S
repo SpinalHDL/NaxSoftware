@@ -27,15 +27,106 @@ _start:
     trap_handle    \
     trap_setup     \
 
-    li x31, 50
+
+    li x1, 10
+    li x2, 11
+    add x3, x2, x1
+    la x1, data
+    lb x2, 0(x1)
+    lh x2, 0(x1)
+    lw x2, 0(x1)
+    ld x2, 0(x1)
+    ld x3, 8(x1)
+    xor x2, x2, x3
+    sd x2, 16(x1)
+    lb x2, 16(x1)
+    lh x2, 16(x1)
+    lw x2, 16(x1)
+    ld x2, 16(x1)
+    lbu x2, 16(x1)
+    lhu x2, 16(x1)
+    lwu x2, 16(x1)
+
+    j pass
+
+/*
+    la   s1, data
+    li   a5, 0
+    li   s3, 10000
+test:
+    bne	 a5,s3, continue
+    j    pass
+continue:
+    slli a4,a5,0x2
+    add	 a4,s1,a4
+    sw	 a3,0(a4)
+    addi a5,a5,1
+    j	 test*/
+
+
+
+/*
+    la s1, data
+    li a5, 0
+    li s3, 10000
+test:
+    bne	a5,s3, continue
+    j pass
+continue:
+    slli	a4,a5,0x2
+    add	a4,s1,a4
+    lw	a4,0(a4)
+    addi	a5,a5,1
+    j	test
+*/
+
+
+    li x31, 5000
+    la x30, data
+    li x29, (1 << 16) + 0x2000
+    add x29, x29, x30
 redoAll:
+    sw x31, 0x00(x30)
+    sw x31, 0x04(x30)
+    sw x31, 0x08(x30)
+    sw x31, 0x0C(x30)
+    sw x31, 0x10(x30)
+    sw x31, 0x14(x30)
+    sw x31, 0x18(x30)
+    sw x31, 0x1C(x30)
+    addi x30, x30, 0x20
+
+    sw x31, 0x00(x29)
+    sw x31, 0x04(x29)
+    sw x31, 0x08(x29)
+    sw x31, 0x0C(x29)
+    sw x31, 0x10(x29)
+    sw x31, 0x14(x29)
+    sw x31, 0x18(x29)
+    sw x31, 0x1C(x29)
+    addi x29, x29, 0x20
+
+   /* la x2, data
+    lw x1, 0(x2)
+    sw x31, 0(x2)
+    lw x1, 256(x2)
+    sw x31, 256(x2)
+    li x1, 4096
+    add x2,x2, x1
+    lw x1, 0(x2)
+    sw x31, 0(x2)
+    lw x1, 256(x2)
+    sw x31, 256(x2)
+    .word(0x500F)*/
+
+/*
     li x2, 1
     div x1, x31, x2
     la x2, data
     sw x1, 0(x2)
     lw x1, 0(x2)
     nop
-    nop
+    nop*/
 
 
 
@@ -330,6 +421,7 @@ delay:
     nop
     ret
 
+.align 12
 data:
     .word 0x27e91b60
     .word 0xa656bbbb

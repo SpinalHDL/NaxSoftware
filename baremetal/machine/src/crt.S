@@ -38,15 +38,21 @@ redoAll:
     nop
     nop
     csrr x1, minstret
+#if __riscv_xlen == 32
     csrr x1, minstreth
+#endif
     li x1, 0x12345678
     csrw minstret,x1
     csrr x1, minstret
+#if __riscv_xlen == 32
     csrr x1, minstreth
+#endif
+#if __riscv_xlen == 32
     li x1, 0xAABBCCDD
     csrw minstreth,x1
     csrr x1, minstret
     csrr x1, minstreth
+#endif
 
     csrr x1, mcycle
     csrr x1, mcycle
