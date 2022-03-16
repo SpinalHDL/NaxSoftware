@@ -58,6 +58,18 @@
 1:                                 ;\
     supervisor_read
 
+#define machine_to_supervisor_x1       \
+    csrw mepc, x1                  ;\
+    li x1, MSTATUS_MPP_SUPERVISOR  ;\
+    csrw mstatus, x1               ;\
+    mret                           ;\
+    j fail                         ;\
+    j fail                         ;\
+    j fail                         ;\
+    j fail                         ;\
+
+
+
 #define machine_to_user       \
     la x1,1f                       ;\
     csrw mepc, x1                  ;\

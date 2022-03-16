@@ -41,10 +41,19 @@ _start:
     ecall
     trap_handle
 
+
+
     li x1, -1
     csrw mideleg, x1
     csrw medeleg, x1
 
+//Setup machine mode trap that redirect to supervisor
+    trap_setup
+    j redirect_setuped
+    trap_handle
+    csrr x1, stvec
+    machine_to_supervisor_x1
+redirect_setuped:
 
     machine_to_supervisor
     supervisor_trap_failure
@@ -71,7 +80,7 @@ _start:
     setNext(MMU_TABLE_1, 1, 0x80000000, MMU_TABLE_2)
     //setNext(MMU_TABLE_0, 2, 0x80000000, MMU_TABLE_1)
     sfence.vma
-
+cd
     li x1, 0x1234
     auipc x1, 0
     lw x1, 0(x1)
@@ -87,26 +96,10 @@ _start:
     ecall
     supervisor_handle_trap
 
-    supervisor_setup_trap
-    li x1, 1 << 37; lw x1, 0(x1)
-    supervisor_handle_trap
-
-    supervisor_setup_trap
-    li x1, 1 << 38; lw x1, 0(x1)
-    supervisor_handle_trap
-
-    supervisor_setup_trap
-    li x1, ~((1 << 37)-1); lw x1, 0(x1)
-    supervisor_handle_trap
-
-    supervisor_setup_trap
-    li x1, ~((1 << 38)-1); lw x1, 0(x1)
-    supervisor_handle_trap
-
-    supervisor_setup_trap
-    li x1, ~((1 << 39)-1); lw x1, 0(x1)
-    supervisor_handle_trap
-
+    //test
+    #include "mepc_mtval.h"
+    disableMmu()
+    #include "mepc_mtval.h"
 
     j pass
 
