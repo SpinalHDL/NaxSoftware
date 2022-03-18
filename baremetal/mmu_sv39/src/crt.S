@@ -80,7 +80,7 @@ redirect_setuped:
     setNext(MMU_TABLE_1, 1, 0x80000000, MMU_TABLE_2)
     //setNext(MMU_TABLE_0, 2, 0x80000000, MMU_TABLE_1)
     sfence.vma
-cd
+
     li x1, 0x1234
     auipc x1, 0
     lw x1, 0(x1)
