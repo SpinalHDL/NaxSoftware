@@ -15,6 +15,7 @@
     j fail;                 \
     j fail;                 \
     j fail;                 \
+.align 4;  \
 1:                         \
     csrr x1, mepc;          \
     csrr x1, mcause;        \
@@ -89,6 +90,7 @@
 
 #define machine_handle_trap \
     j fail              ;\
+.align 4                ;\
 2:                      ;\
     machine_read
 
@@ -99,6 +101,7 @@
 
 #define supervisor_handle_trap \
     j fail              ;\
+.align 4                ;\
 3:                      ;\
     supervisor_read
 

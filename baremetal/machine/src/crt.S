@@ -16,6 +16,7 @@ _start:
     j fail;                 \
     j fail;                 \
     j fail;                 \
+.align 4                ;\
 1:                         \
     csrr x1, mepc;          \
     csrr x1, mcause;        \
@@ -475,6 +476,7 @@ delay:
     nop
     ret
 
+.align 8
 data:
     .word 0x27e91b60
     .word 0xa656bbbb

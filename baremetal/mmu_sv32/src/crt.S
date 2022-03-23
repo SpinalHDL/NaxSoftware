@@ -366,7 +366,7 @@ pass:
 
 
 
-
+.align 4
 trap:
     beq TRAP_OK, x0, fail
     csrr x1, mcause
