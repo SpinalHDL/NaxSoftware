@@ -152,6 +152,7 @@
     la x1, 1f;                  \
     csrw stvec, x1;             \
     j 4f;                        \
+.align 4;                      \
 1:                              \
     nop;                        \
     j fail;                     \

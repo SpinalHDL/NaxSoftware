@@ -64,6 +64,7 @@ redirect_setuped:
 
     li x1, 0x1234
     auipc x1, 0
+    andi x1, x1, -3
     lw x1, 0(x1)
 
     //Test mega leaf
@@ -73,6 +74,7 @@ redirect_setuped:
 
     li x1, 0x1234
     auipc x1, 0
+    andi x1, x1, -3
     lw x1, 0(x1)
 
     //Test kilo leaf
@@ -83,6 +85,7 @@ redirect_setuped:
 
     li x1, 0x1234
     auipc x1, 0
+    andi x1, x1, -3
     lw x1, 0(x1)
 
     //Setup mega leaf for access to the tlb setup
