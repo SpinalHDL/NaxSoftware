@@ -1,6 +1,6 @@
 PROJ_NAME=dhrystone
 
-DEBUG=no
+DEBUG?=no
 BENCH=yes
 STANDALONE = ..
 
