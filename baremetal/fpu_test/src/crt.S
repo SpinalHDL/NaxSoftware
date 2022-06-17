@@ -308,8 +308,8 @@ make compile && obj_dir/VNaxRiscv --load-bin ../../../../ext/NaxSoftware/baremet
 
     test_x_s  (118, fclass.s)
 
-    test_f_w(119, fcvt.s.wu)
-    test_f_w(120, fcvt.s.w)
+    test_f_w_r(119, fcvt.s.wu)
+    test_f_w_r(120, fcvt.s.w)
     test_x_s_r(121, fcvt.wu.s)
     test_x_s_r(122, fcvt.w.s)
 
