@@ -218,6 +218,18 @@ make compile && obj_dir/VNaxRiscv --load-bin ../../../../ext/NaxSoftware/baremet
     op f10, f1, rne ;\
     test_post(8)    ;\
 
+#define test_f_l(id, op) ;\
+    test_pre(id)    ;\
+    ld x20, 0(x2)   ;\
+    op f10, x20      ;\
+    test_post(8)    ;\
+
+#define test_f_w(id, op) ;\
+    test_pre(id)    ;\
+    lw x20, 0(x2)   ;\
+    op f10, x20      ;\
+    test_post(4)    ;\
+
 #define test_f_x(id, op) ;\
     test_pre(id)    ;\
     ld x20, 0(x2)   ;\
@@ -317,6 +329,23 @@ make compile && obj_dir/VNaxRiscv --load-bin ../../../../ext/NaxSoftware/baremet
     test_f_l_r(128, fcvt.s.l)
     test_x_s_r(129, fcvt.lu.s)
     test_x_s_r(130, fcvt.l.s)
+
+    test_f_l(200, fcvt.d.wu)
+    test_f_l(201, fcvt.d.w)
+    test_f_l_r(202, fcvt.s.wu)
+    test_f_l_r(203, fcvt.s.w)
+
+    //nan-boxing
+    test_pre(300)
+    li x20, 0x3f801234
+    fmv.d.x f1, x20
+    fmv.x.d x20, f1
+    fsgnj.s f2, f1, f1
+    fmv.x.d x20, f2
+    fadd.s f2, f1, f1, rup
+    fmv.x.d x20, f2
+    j pass
+2:
     
     j fail
 
