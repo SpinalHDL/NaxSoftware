@@ -12,6 +12,7 @@
 #define MMU_TABLE_3 0x80004000
 #define MMU_TABLE_4 0x80005000
 #define MMU_TABLE_5 0x80006000
+#define MEMORY_0 0x80007000
 
 #define setNext(table, level, virtual, next) \
     li x1, table + ((virtual >> (level*9+9)) & 0xFF8); \
@@ -87,6 +88,26 @@ redirect_setuped:
     auipc x1, 0
     andi x1, x1, -3
     lw x1, 0(x1)
+
+
+    //Test page fault RVC
+test_rvc_fault:
+    disableMmu()
+    setLeaf(MMU_TABLE_2, 0, MEMORY_0, MEMORY_0, 0xCF)
+   // setNext(MMU_TABLE_1, 1, MEMORY_0, MMU_TABLE_2)
+   // setNext(MMU_TABLE_0, 2, MEMORY_0, MMU_TABLE_1)
+    enableMmu(MMU_TABLE_0)
+    sfence.vma
+    li x1, MEMORY_0 + 0xFFE
+    li x2, 0x13 //NOP
+    sh x2, 0(x1)
+    supervisor_setup_trap
+test_rvc_trap_test:
+    li x1, MEMORY_0 + 0xFFE
+    jr x1
+    supervisor_handle_trap
+test_rvc_done:
+    supervisor_trap_failure
 
     //Setup mega leaf for access to the tlb setup
     disableMmu()

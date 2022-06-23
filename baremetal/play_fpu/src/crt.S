@@ -5,10 +5,6 @@ _start:
 #include "../../driver/sim_asm.h"
 #define delay_long() nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop
 
-#define MSTATUS_FS_INITIAL (1 << 13)
-#define MSTATUS_FS_CLEAN (2 << 13)
-#define MSTATUS_FS_DIRTY (3 << 13)
-#define MSTATUS_FS_MASK (3 << 13)
 
     csrr x1, misa
     li x1, MSTATUS_FS_MASK
@@ -37,12 +33,146 @@ _start:
     fld f6, 0(x1)
     la x1, minusonedotfve
     fld f7, 0(x1)
+   /* fmv.d.x f8, x0
+    li x1, -1
+    fmv.d.x f9, x1
+    li x1, 0x7FF0000000000000
+    fmv.d.x f10, x1*/
 
     delay_long();
 
-    fsqrt.d f10,f1
-    fsqrt.d f10,f2
-    fsqrt.d f10,f3
+    csrr x1, mstatus
+    li x1, MSTATUS_FS_MASK
+    csrc mstatus, x1
+    li x1, MSTATUS_FS_INITIAL
+    csrs mstatus, x1
+    fmv.x.d x1, f1
+    fmv.x.d x1, f2
+    fmv.d.x f2, x1
+
+/*
+    li x1, 0x380ffffff8000000
+    fmv.d.x f1, x1
+    fcvt.s.d f2,f1,rdn
+    fcvt.s.d f2,f1,rup
+    fcvt.s.d f2,f1,rtz
+    fcvt.s.d f2,f1,rmm
+    fcvt.s.d f2,f1,rne
+
+    li x1, 0x380ffffff0000000
+    fmv.d.x f1, x1
+    fcvt.s.d f2,f1,rdn
+    fcvt.s.d f2,f1,rup
+    fcvt.s.d f2,f1,rtz
+    fcvt.s.d f2,f1,rmm
+    fcvt.s.d f2,f1,rne
+
+    li x1, 0x380fffffe0000000
+    fmv.d.x f1, x1
+    fcvt.s.d f2,f1,rdn
+    fcvt.s.d f2,f1,rup
+    fcvt.s.d f2,f1,rtz
+    fcvt.s.d f2,f1,rmm
+    fcvt.s.d f2,f1,rne
+
+
+    li x1, 0x380fffffc0000000
+    fmv.d.x f1, x1
+    fcvt.s.d f2,f1,rdn
+    fcvt.s.d f2,f1,rup
+    fcvt.s.d f2,f1,rtz
+    fcvt.s.d f2,f1,rmm
+    fcvt.s.d f2,f1,rne
+
+
+
+    li x1, 0x380fffff80000000
+    fmv.d.x f1, x1
+    fcvt.s.d f2,f1,rdn
+    fcvt.s.d f2,f1,rup
+    fcvt.s.d f2,f1,rtz
+    fcvt.s.d f2,f1,rmm
+    fcvt.s.d f2,f1,rne
+
+
+
+    li x1, 0x380fffff00000000
+    fmv.d.x f1, x1
+    fcvt.s.d f2,f1,rdn
+    fcvt.s.d f2,f1,rup
+    fcvt.s.d f2,f1,rtz
+    fcvt.s.d f2,f1,rmm
+    fcvt.s.d f2,f1,rne
+
+
+
+
+    li x1, 0x380fffffe8000000
+    fmv.d.x f1, x1
+    fcvt.s.d f2,f1,rdn
+    fcvt.s.d f2,f1,rup
+    fcvt.s.d f2,f1,rtz
+    fcvt.s.d f2,f1,rmm
+    fcvt.s.d f2,f1,rne
+
+    li x1, 0x380fffffd0000000
+    fmv.d.x f1, x1
+    fcvt.s.d f2,f1,rdn
+    fcvt.s.d f2,f1,rup
+    fcvt.s.d f2,f1,rtz
+    fcvt.s.d f2,f1,rmm
+    fcvt.s.d f2,f1,rne
+
+    li x1, 0x380fffffa0000000
+    fmv.d.x f1, x1
+    fcvt.s.d f2,f1,rdn
+    fcvt.s.d f2,f1,rup
+    fcvt.s.d f2,f1,rtz
+    fcvt.s.d f2,f1,rmm
+    fcvt.s.d f2,f1,rne
+
+
+    li x1, 0x380fffff40000000
+    fmv.d.x f1, x1
+    fcvt.s.d f2,f1,rdn
+    fcvt.s.d f2,f1,rup
+    fcvt.s.d f2,f1,rtz
+    fcvt.s.d f2,f1,rmm
+    fcvt.s.d f2,f1,rne
+
+
+
+    li x1, 0x380ffffe80000000
+    fmv.d.x f1, x1
+    fcvt.s.d f2,f1,rdn
+    fcvt.s.d f2,f1,rup
+    fcvt.s.d f2,f1,rtz
+    fcvt.s.d f2,f1,rmm
+    fcvt.s.d f2,f1,rne
+
+
+
+    li x1, 0x380ffffd00000000
+    fmv.d.x f1, x1
+    fcvt.s.d f2,f1,rdn
+    fcvt.s.d f2,f1,rup
+    fcvt.s.d f2,f1,rtz
+    fcvt.s.d f2,f1,rmm
+    fcvt.s.d f2,f1,rne*/
+
+
+
+
+   /* fdiv.d f11, f1, f8, rup
+    fdiv.d f11, f9, f9, rup
+    fdiv.d f11, f10, f10, rup
+    csrr x1, fcsr
+    csrr x1, frm
+    csrr x1, fflags*/
+
+//    fsqrt.d f10,f1
+//    fsqrt.d f10,f2
+//    fsqrt.d f10,f3
 
 //    fmul.d f10,f1,f2
 //    fmul.d f10,f10,f2

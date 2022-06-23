@@ -3,6 +3,7 @@
 
 ```
 cd $NAXRISCV/..
+export NAX_SOFTWARE=$NAXRISCV/ext/NaxSoftware
 git clone https://github.com/buildroot/buildroot.git --branch master
 cd buildroot
 git checkout 9ef54b7d

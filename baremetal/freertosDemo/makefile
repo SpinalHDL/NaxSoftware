@@ -14,10 +14,10 @@ SRCS = 	$(wildcard src/*.c) \
 		$(wildcard src/*.cpp) \
 		$(wildcard src/*.S) \
 		$(wildcard ${FREERTOS}/Source/*.c) \
-        ${FREERTOS}/Source/portable/MemMang/heap_4.c \
-        ${FREERTOS_RISCV}/port.c \
-        ${FREERTOS_RISCV}/portASM.S \
-        ${STANDALONE}/common/start.S \
+		${FREERTOS}/Source/portable/MemMang/heap_4.c \
+		${FREERTOS_RISCV}/port.c \
+		${FREERTOS_RISCV}/portASM.S \
+		${STANDALONE}/common/start.S \
 
 SRCS += ${APP_SRC}
 
@@ -32,7 +32,7 @@ CFLAGS += -DportasmHANDLE_INTERRUPT=external_interrupt_handler
 
 include ../common/app.mk
 
-
+#https://github.com/coldnew/FreeRTOS-mirror.git
 
 
 

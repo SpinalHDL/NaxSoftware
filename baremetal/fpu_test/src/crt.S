@@ -18,7 +18,13 @@ make compile && obj_dir/VNaxRiscv --load-bin ../../../../ext/NaxSoftware/baremet
 #define MSTATUS_FS_DIRTY (3 << 13)
 #define MSTATUS_FS_MASK (3 << 13)
 
-
+#if __riscv_xlen >= 64
+#define XLEN_LOAD ld
+#define XLEN_BYTES 8
+#else
+#define XLEN_LOAD lw
+#define XLEN_BYTES 4
+#endif
 
 #define test_pre(id) ;\
     li x4, id       ;\
@@ -202,6 +208,18 @@ make compile && obj_dir/VNaxRiscv --load-bin ../../../../ext/NaxSoftware/baremet
     op f10, x20, rne ;\
     test_post(8)    ;\
 
+
+#define test_f_x_r(id, op) ;\
+    test_pre(id)    ;\
+    XLEN_LOAD x20, 0(x2)   ;\
+    op f10, x20, rtz ;\
+    op f10, x20, rmm ;\
+    op f10, x20, rdn ;\
+    op f10, x20, rup ;\
+    op f10, x20, rne ;\
+    test_post(XLEN_BYTES)    ;\
+
+
 #define test_f_s(id, op) ;\
     test_pre(id)    ;\
     flw f1, 0(x2)   ;\
@@ -230,11 +248,26 @@ make compile && obj_dir/VNaxRiscv --load-bin ../../../../ext/NaxSoftware/baremet
     op f10, x20      ;\
     test_post(4)    ;\
 
+#if __riscv_xlen >= 64
+
 #define test_f_x(id, op) ;\
     test_pre(id)    ;\
-    ld x20, 0(x2)   ;\
+    lw x20, 0(x2)   ;\
+    lw x21, 4(x2)   ;\
+    slli x21, x21, 32   ;\
+    or x20, x20, x21   ;\
     op f10, x20      ;\
     test_post(8)    ;\
+
+#else
+
+#define test_f_x(id, op) ;\
+    test_pre(id)    ;\
+    lw x20, 0(x2)   ;\
+    op f10, x20      ;\
+    test_post(4)    ;\
+
+#endif
 
 
     csrr x1, misa
@@ -250,8 +283,10 @@ make compile && obj_dir/VNaxRiscv --load-bin ../../../../ext/NaxSoftware/baremet
     li x3, TEST_KIND
     lw x3, 0(x3)
 
+
     test_x_f(0, fmv.x.w)
 
+#if __riscv_flen >= 64
     test_d_d_d_r(1, fadd.d)
     test_d_d_d_r(2, fsub.d)
     test_d_d_d_r(3, fmul.d)
@@ -280,21 +315,25 @@ make compile && obj_dir/VNaxRiscv --load-bin ../../../../ext/NaxSoftware/baremet
     test_f_w(20, fcvt.d.w)
     test_x_d_r(21, fcvt.wu.d)
     test_x_d_r(22, fcvt.w.d)
+
     test_f_s(23, fcvt.d.s)
     test_f_d_r(24, fcvt.s.d)
 
+    test_f_x(200, fcvt.d.wu)
+    test_f_x(201, fcvt.d.w)
+
+#if __riscv_xlen >= 64
     test_x_d(25, fmv.x.d)
     test_f_x(26, fmv.d.x)
-
     test_f_l_r(27, fcvt.d.lu)
     test_f_l_r(28, fcvt.d.l)
     test_x_d_r(29, fcvt.lu.d)
     test_x_d_r(30, fcvt.l.d)
+#endif
+#endif
 
 
     test_f_x(31, fmv.s.x)
-
-
 
     test_s_s_s_r(101, fadd.s)
     test_s_s_s_r(102, fsub.s)
@@ -325,27 +364,15 @@ make compile && obj_dir/VNaxRiscv --load-bin ../../../../ext/NaxSoftware/baremet
     test_x_s_r(121, fcvt.wu.s)
     test_x_s_r(122, fcvt.w.s)
 
+    test_f_x_r(202, fcvt.s.wu)
+    test_f_x_r(203, fcvt.s.w)
+
+#if __riscv_xlen >= 64
     test_f_l_r(127, fcvt.s.lu)
     test_f_l_r(128, fcvt.s.l)
     test_x_s_r(129, fcvt.lu.s)
     test_x_s_r(130, fcvt.l.s)
-
-    test_f_l(200, fcvt.d.wu)
-    test_f_l(201, fcvt.d.w)
-    test_f_l_r(202, fcvt.s.wu)
-    test_f_l_r(203, fcvt.s.w)
-
-    //nan-boxing
-    test_pre(300)
-    li x20, 0x3f801234
-    fmv.d.x f1, x20
-    fmv.x.d x20, f1
-    fsgnj.s f2, f1, f1
-    fmv.x.d x20, f2
-    fadd.s f2, f1, f1, rup
-    fmv.x.d x20, f2
-    j pass
-2:
+#endif
     
     j fail
 

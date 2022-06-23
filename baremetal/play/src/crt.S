@@ -28,6 +28,10 @@ _start:
     trap_setup     \
 
 
+
+
+
+  /*  csrr x1, mstatus
     li x1, 10
     li x2, 11
     add x3, x2, x1
@@ -47,7 +51,7 @@ _start:
     lhu x2, 16(x1)
     lwu x2, 16(x1)
 
-    j pass
+    j pass*/
 
 /*
     la   s1, data
