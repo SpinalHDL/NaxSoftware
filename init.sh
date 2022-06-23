@@ -1,5 +1,8 @@
 #!/bin/sh
+fileid="1f-YFm6I185R9o_NniNBJkkVGNghRBEDK"
+filename="buildroot.zip"
+html=`curl -c ./cookie -s -L "https://drive.google.com/uc?export=download&id=${fileid}"`
+curl -Lb ./cookie "https://drive.google.com/uc?export=download&`echo ${html}|grep -Po '(confirm=[a-zA-Z0-9\-_]+)'`&id=${fileid}" -o ${filename}
 
-wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1f-YFm6I185R9o_NniNBJkkVGNghRBEDK' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1f-YFm6I185R9o_NniNBJkkVGNghRBEDK" -O buildroot.zip && rm -rf /tmp/cookies.txt
 unzip buildroot.zip
 
