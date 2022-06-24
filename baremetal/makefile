@@ -8,3 +8,4 @@ all_arch:
 	make -C freertosDemo all_arch
 	make -C mmu_sv32 all_arch
 	make -C mmu_sv39 all_arch
+	make -C fpu_test3 all_arch
