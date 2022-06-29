@@ -1,0 +1,35 @@
+/dts-v1/;
+
+/ {
+    #address-cells = <0x1>;
+    #size-cells = <0x1>;
+    compatible = "spinal,naxriscv";
+    model = "spinal,naxriscv_sim";
+    chosen {
+        bootargs = "rootwait console=hvc0 earlycon=sbi root=/dev/ram0 init=/sbin/init";
+        linux,initrd-start = <0x84000000>;
+        linux,initrd-end = <0x84800000>;
+    };
+    cpus {
+        #address-cells = <0x1>;
+        #size-cells = <0x0>;
+        timebase-frequency = <100000000>;
+        cpu@0 {
+            device_type = "cpu";
+            compatible = "riscv";
+            riscv,isa = "rv64imafdc";
+            mmu-type = "riscv,sv39";
+            reg = <0>;
+            status = "okay";
+            L0: interrupt-controller {
+                #interrupt-cells = <0x00000001>;
+                interrupt-controller;
+                compatible = "riscv,cpu-intc";
+            };
+        };
+    };
+    memory@80000000 {
+        device_type = "memory";
+        reg = <0x80400000 0x1FC00000>;
+    };
+};
