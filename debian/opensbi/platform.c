@@ -53,26 +53,6 @@ static int nax_final_init(bool cold_boot)
 	return 0;
 }
 
-static u32 nax_pmp_region_count(u32 hartid)
-{
-	return 0;
-}
-
-static int nax_pmp_region_info(u32 hartid, u32 index, ulong *prot, ulong *addr,
-				ulong *log2size)
-{
-	int ret = 0;
-
-	switch (index) {
-	default:
-		ret = -1;
-		break;
-	};
-
-	return ret;
-}
-
-
 void nax_putc(char ch){
 	writel(ch, (void*)NAX_PUTC);
 }
@@ -116,18 +96,15 @@ static int nax_timer_init(bool cold_boot)
 	return clint_warm_timer_init();
 }
 
-static int nax_system_reset(u32 type)
+static void nax_system_reset(u32 reset_type, u32 reset_reason)
 {
 	/* Tell the "finisher" that the simulation
 	 * was successful so that QEMU exits
 	 */
 
-	return 0;
 }
 
 const struct sbi_platform_operations platform_ops = {
-	.pmp_region_count	= nax_pmp_region_count,
-	.pmp_region_info	= nax_pmp_region_info,
 	.final_init		    = nax_final_init,
 	.console_putc		= nax_putc,
 	.console_getc		= nax_getc,

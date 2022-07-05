@@ -17,8 +17,24 @@ export BUILDROOT=$NAXRISCV/ext/NaxSoftware/buildroot/images/rv64imafdc
 --load-bin $LINUX/Image,0x80400000 \
 --load-bin $BUILDROOT/rootfs.cpio,0x84000000
 
+
+cd $NAXRISCV/src/test/cpp/naxriscv
+export DEBIAN=$NAXRISCV/../debian/riscv-linux
+export OPENSBI=$NAXRISCV/../opensbi/build/platform/out-of-tree/firmware
+export LINUX=$NAXRISCV/../debian/linuxSpinal/arch/riscv/boot
+export DTB=$NAXRISCV/ext/NaxSoftware/debian/linux
+export BUILDROOT=$NAXRISCV/ext/NaxSoftware/buildroot/images/rv64imafdc
+./obj_dir/VNaxRiscv \
+--load-bin $OPENSBI/fw_jump.bin,0x80000000 \
+--load-bin $DTB/linux.dtb,0x83F80000 \
+--load-bin $LINUX/Image,0x80400000 \
+--load-bin $BUILDROOT/rootfs.cpio,0x84000000
+
+
 # OPENSBI
-cd $NAXRISCV/opensbi
+cd $NAXRISCV/../opensbi
+rm -rf platform/out-of-tree
+cp -r /media/data/open/riscv/VexRiscvOoo/ext/NaxSoftware/debian/opensbi platform/out-of-tree
 export OPENSBI_PLATEFORM=out-of-tree
 export CROSS_COMPILE=riscv-none-embed-
 export PLATFORM_RISCV_XLEN=64
@@ -36,5 +52,5 @@ git clone https://github.com/torvalds/linux.git --branch v5.9
 cp $NAXRISCV/ext/NaxSoftware/debian/linux/config-virt .config
 make -j8 ARCH=riscv oldconfig
 # optionally configure it further
-#make -j8 ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu- nconfig
+#make -j8 ARCH=riscv nconfig
 make -j8 ARCH=riscv all
