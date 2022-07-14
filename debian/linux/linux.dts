@@ -6,9 +6,11 @@
     compatible = "spinal,naxriscv";
     model = "spinal,naxriscv_sim";
     chosen {
-        bootargs = "rootwait console=hvc0 earlycon=sbi root=/dev/ram0 init=/sbin/init";
-        linux,initrd-start = <0x84000000>;
-        linux,initrd-end = <0x84800000>;
+        //bootargs = "rootwait console=hvc0 earlycon=sbi root=/dev/ram0 init=/sbin/init";
+        bootargs = "rootwait console=hvc0 earlycon=sbi root=/dev/sblkdev0 rootfstype=btrfs ro rootflags=ssd,subvol=/sid rootwait";
+
+        //linux,initrd-start = <0x84000000>;
+        //linux,initrd-end = <0x84800000>;
     };
     cpus {
         #address-cells = <0x1>;
@@ -31,5 +33,15 @@
     memory@80000000 {
         device_type = "memory";
         reg = <0x80400000 0x1FC00000>;
+    };
+    /*hd@10001000 {
+        reg = <0x10001000 0x1000>;
+        compatible = "simple_block";
+        mode = <1>;
+    };*/
+    hd@40000000 {
+        reg = <0x20000000 0x60000000>;
+        compatible = "simple_block";
+        mode = <0>;
     };
 };
