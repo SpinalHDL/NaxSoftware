@@ -34,7 +34,8 @@ export BLOCK=$NAXRISCV/../debian/riscv-linux
 cd $NAXRISCV/src/test/cpp/naxriscv
 export DEBIAN=$NAXRISCV/../debian/riscv-linux
 export OPENSBI=$NAXRISCV/../opensbi/build/platform/out-of-tree/firmware
-export LINUX=$NAXRISCV/../debian/linuxSpinal/arch/riscv/boot
+export LINUX=/media/data/open/riscv/litex/naxriscv_debian/linux-53b46d10f9a438a29c061cac05fb250568d1d21b/arch/riscv/boot
+#export LINUX=$NAXRISCV/../debian/linuxSpinal/arch/riscv/boot
 export DTB=$NAXRISCV/ext/NaxSoftware/debian/linux
 export BLOCK=$NAXRISCV/../debian/riscv-linux
 ./obj_dir/VNaxRiscv \
@@ -42,6 +43,9 @@ export BLOCK=$NAXRISCV/../debian/riscv-linux
 --load-bin $DTB/linux.dtb,0x83F80000 \
 --load-bin $LINUX/Image,0x80400000 \
 --load-bin $BLOCK/sid.bin,0x20000000
+
+./obj_dir/VNaxRiscv --load-bin /media/data/open/riscv/VexRiscvOoo/../opensbi/build/platform/out-of-tree/firmware/fw_jump.bin,0x80000000 --load-bin /media/data/open/riscv/VexRiscvOoo/ext/NaxSoftware/debian/linux/linux.dtb,0x83F80000 --load-bin /media/data/open/riscv/litex/naxriscv_debian/linux-53b46d10f9a438a29c061cac05fb250568d1d21b/arch/riscv/boot/Image,0x80400000 --load-bin /media/data/open/riscv/VexRiscvOoo/../debian/riscv-linux/sid.bin,0x20000000 --trace --trace-sporadic 0.001 --memory-latency 27
+
 
 # OPENSBI
 cd $NAXRISCV/../opensbi
