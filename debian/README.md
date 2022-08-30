@@ -21,14 +21,18 @@ export BUILDROOT=$NAXRISCV/ext/NaxSoftware/buildroot/images/rv64imafdc
 cd $NAXRISCV/src/test/cpp/naxriscv
 export DEBIAN=$NAXRISCV/../debian/riscv-linux
 export OPENSBI=$NAXRISCV/../opensbi/build/platform/out-of-tree/firmware
-export LINUX=$NAXRISCV/../debian/linuxSpinal/arch/riscv/boot
+#export LINUX=$NAXRISCV/../debian/linuxSpinal/arch/riscv/boot
+export LINUX=/media/data/open/riscv/litex/naxriscv_debian/linux-53b46d10f9a438a29c061cac05fb250568d1d21b/arch/riscv/boot
 export DTB=$NAXRISCV/ext/NaxSoftware/debian/linux
-export BLOCK=$NAXRISCV/../debian/riscv-linux
+export BLOCK=$NAXRISCV/../debian/riscv-linux-raw
 ./obj_dir/VNaxRiscv \
 --load-bin $OPENSBI/fw_jump.bin,0x80000000 \
 --load-bin $DTB/linux.dtb,0x83F80000 \
 --load-bin $LINUX/Image,0x80400000 \
---block-device $BLOCK/sid.bin,wr,0x60000000,0x10001000
+--block-device $BLOCK/sim.bin,wr,0xBB8F1000,0x10001000
+
+--block-device $BLOCK/sid-rv64-ext4.bin,wr,0xBB8F1000,0x10001000
+
 
 
 cd $NAXRISCV/src/test/cpp/naxriscv
@@ -37,7 +41,7 @@ export OPENSBI=$NAXRISCV/../opensbi/build/platform/out-of-tree/firmware
 export LINUX=/media/data/open/riscv/litex/naxriscv_debian/linux-53b46d10f9a438a29c061cac05fb250568d1d21b/arch/riscv/boot
 #export LINUX=$NAXRISCV/../debian/linuxSpinal/arch/riscv/boot
 export DTB=$NAXRISCV/ext/NaxSoftware/debian/linux
-export BLOCK=$NAXRISCV/../debian/riscv-linux
+export BLOCK=$NAXRISCV/../debian/riscv-linux-raw
 ./obj_dir/VNaxRiscv \
 --load-bin $OPENSBI/fw_jump.bin,0x80000000 \
 --load-bin $DTB/linux.dtb,0x83F80000 \
@@ -77,7 +81,17 @@ CONFIG_PRINTK_TIME=y
 
 
 
-
+#
+# Timers subsystem
+#
+CONFIG_TICK_ONESHOT=y
+CONFIG_NO_HZ_COMMON=y
+# CONFIG_HZ_PERIODIC is not set
+CONFIG_NO_HZ_IDLE=y
+# CONFIG_NO_HZ_FULL is not set
+# CONFIG_NO_HZ is not set
+CONFIG_HIGH_RES_TIMERS=y
+# end of Timers subsystem
 
 
 
