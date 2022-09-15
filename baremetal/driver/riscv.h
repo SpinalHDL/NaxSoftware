@@ -4,6 +4,8 @@
 #define CAUSE_ILLEGAL_INSTRUCTION 2
 #define CAUSE_MACHINE_TIMER 7
 #define CAUSE_SCALL 9
+#define CAUSE_PAGE_FAULT 13
+#define CAUSE_ECALL 8
 
 //interrupts
 #define CAUSE_MACHINE_EXTERNAL 11
@@ -16,6 +18,10 @@
 #define MIDELEG_SUPERVISOR_SOFTWARE (1 << 1)
 #define MIDELEG_SUPERVISOR_TIMER (1 << 5)
 #define MIDELEG_SUPERVISOR_EXTERNAL (1 << 9)
+
+#define MSTATUS_MPP_SUPERVISOR         0x00000800
+#define MSTATUS_MPP_USER               0x00000000
+
 
 #define MIP_STIP (1 << 5)
 #define MIE_MTIE (1 << CAUSE_MACHINE_TIMER)
@@ -213,3 +219,19 @@ asm(".set CUSTOM1  , 0x2B");
     );                                         \
     __v;                                       \
 })
+
+
+#define register_read(reg)                        \
+({                                \
+    register unsigned long __v;                \
+    __asm__ __volatile__ ("mv %0, " #reg            \
+                  : "=r" (__v));            \
+    __v;                            \
+})
+
+//#define register_write(csr, val)                    \
+//({                                \
+//    unsigned long __v = (unsigned long)(val);        \
+//    __asm__ __volatile__ ("mv " #reg ", %0"        \
+//                  : : "r" (__v));            \
+//})

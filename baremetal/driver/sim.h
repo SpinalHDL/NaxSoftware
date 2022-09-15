@@ -20,5 +20,9 @@ static long __attribute__ ((noinline)) sim_time(){
     return read_u32(CLINT_TIME);
 }
 
+static void sim_puthex(u32 c){
+    write_u32(c, 0x10000008);
+}
+
 
 
