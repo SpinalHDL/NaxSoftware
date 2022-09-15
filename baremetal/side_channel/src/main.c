@@ -1,4 +1,12 @@
 /*
+The side channel attack used here is to let the CPU speculatively do the following
+1) execute a load that we don't have access to (page fault)
+2) read its data and mask the bit we are interrested in
+3) execute a load that the address depend on that given bit value (which may trigger a cache line refill)
+
+Once back into the none speculative regime, we can look at the side effect in the data cache, by looking of the given line is loaded or not,
+telling use the value of the bit we were interested into.
+
 To work, you need to enable sideChannels = true in the Config.plugins, which will let the data cache write load values to the register file even when mmu checks failed
 
 compile via :
@@ -118,7 +126,7 @@ void user_test_side_channel(){
       REPEAT32(side_channel_attack((u64)lines_flush, bit_id, (u64)lines_flush, 1););
 
       //Do the speculative cache line load !
-      side_channel_attack((u64)secret_address_reg+char_id, bit_id, ((u64)lines_probe), 0);
+      side_channel_attack(((u64)secret_address_reg)+char_id, bit_id, ((u64)lines_probe), 0);
 
       //Check which cache line was speculatively loaded
       u64 start_time = read_u32(CLINT_TIME);
