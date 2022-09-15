@@ -26,7 +26,7 @@ side_channel_attack:
   beqz train, skip_speculative
 
   // This load will page fault
-  ld   t2, 0  (ptr)
+  lb   t2, 0  (ptr)
   srl  t2, t2, bit
   andi t2, t2, 1
   slli t2, t2, 6
