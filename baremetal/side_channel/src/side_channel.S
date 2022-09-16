@@ -10,13 +10,9 @@
 side_channel_attack:
   addi sp, sp,-8
 
-  //Slow down the commits using dependencies, also slow down the branch execution to avoid pipeline flush
-  sd  t0, 0(sp)
-  ld  t0, 0(sp)
-  sd  t0, 0(sp)
-  ld  t0, 0(sp)
-  sd  t0, 0(sp)
-  ld  t0, 0(sp)
+  //Slow down the commits using dependencies, also slow down the branch execution to avoid pipeline flush too early
+  sd  train, 0(sp)
+  ld  train, 0(sp)
   sd  train, 0(sp)
   ld  train, 0(sp)
 
