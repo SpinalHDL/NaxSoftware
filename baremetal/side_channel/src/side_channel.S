@@ -11,15 +11,14 @@ side_channel_attack:
   addi sp, sp,-8
 
   //Slow down the commits using dependencies, also slow down the branch execution to avoid pipeline flush
-  mv  t0, sp
-  sd  t0, 0(t0)
-  ld  t0, 0(t0)
-  sd  t0, 0(t0)
-  ld  t0, 0(t0)
-  sd  t0, 0(t0)
-  ld  t0, 0(t0)
-  sd  train, 0(t0)
-  ld  train, 0(t0)
+  sd  t0, 0(sp)
+  ld  t0, 0(sp)
+  sd  t0, 0(sp)
+  ld  t0, 0(sp)
+  sd  t0, 0(sp)
+  ld  t0, 0(sp)
+  sd  train, 0(sp)
+  ld  train, 0(sp)
 
   // Enable or not the commit of the speculative execution which follow bellow
   beqz train, skip_speculative
