@@ -128,6 +128,10 @@ void user_test_side_channel(){
       //Do the speculative cache line load !
       side_channel_attack(((u64)secret_address_reg)+char_id, bit_id, ((u64)lines_probe), 0);
 
+      //Those nop are added to ensure that the miss-speculated execution from side_channel_attack do not execute
+      //anything which could load additional cache lines (especially the *((volatile u8*) lines_probe); bellow)
+      REPEAT32(asm("nop"););
+
       //Check which cache line was speculatively loaded
       u64 start_time = read_u32(CLINT_TIME);
       *((volatile u8*) lines_probe);
