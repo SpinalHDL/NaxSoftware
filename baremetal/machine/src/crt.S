@@ -182,8 +182,8 @@ redoAll:
 
     //Check no store side effects
     la x1, data
-    lw x1, 0(x1)
-    lw x1, 4(x1)
+    lw x2, 0(x1)
+    lw x2, 4(x1)
 
     // JALR clear bit 0
     la x1, 2f+1
