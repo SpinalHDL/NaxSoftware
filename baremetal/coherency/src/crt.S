@@ -36,8 +36,8 @@ _start:
 #define REPEAT_COUNTER x20
 #define PTR x21
 
-  li HART_COUNT, 4 //UPDATE ME
-  li HART_MASK, 3  //UPDATE ME
+  li HART_COUNT, 2 //UPDATE ME
+  li HART_MASK, 1  //UPDATE ME
   csrr HART_ID, mhartid
 
 //io  -> iow  : OK
@@ -45,6 +45,25 @@ _start:
 //w   -> w    : OK
 //w   -> ior  : Need to wait for SQ writeback
 //r   -> iow  : OK
+
+
+// check if a lr.w pulling could lockup other thread from using a block
+test_lrsc_lockup:
+  li REPEAT_COUNTER, 100
+  la PTR, lrsc_lockup_data
+  bnez HART_ID, test_lrsc_lockup_store
+test_lrsc_lockup_lr:
+  lr.w	x1,(PTR)
+  beqz x1, test_lrsc_lockup_lr
+  j test_lrsc_lockup_done
+test_lrsc_lockup_store:
+  sw x0, 0(PTR)
+  addi REPEAT_COUNTER, REPEAT_COUNTER, -1
+  bnez REPEAT_COUNTER, test_lrsc_lockup_store
+  li x1, 1
+  sw x1, 0(PTR)
+
+test_lrsc_lockup_done:
 
 test_progress:
   la PTR, sharedD
@@ -219,6 +238,8 @@ sharedC:
     .word 0x0
 sharedD:
     .word 0x0
+    .word 0x0
+lrsc_lockup_data:
     .word 0x0
 .align 12
 fenceData:
