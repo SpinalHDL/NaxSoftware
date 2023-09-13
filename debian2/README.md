@@ -3,6 +3,8 @@ But with some changes :
 - Different partitions (for litex)
 - file images of rootfs, not the whole sdcard
 
+
+Create a Debian rootfs
 ```shell
 export MNT=$PWD/mnt
 
@@ -43,7 +45,7 @@ EOF
 passwd
 
 # Change hostname
-echo root > /etc/hostname
+echo miaou > /etc/hostname
 
 # Set up fstab
 cat > /etc/fstab <<EOF
@@ -64,7 +66,7 @@ apt-get -y install usbutils
 apt-get -y install xorg xserver-xorg-core xinit
 apt-get -y install twm wmaker
 apt-get -y install chocolate-doom openttd xscreensaver xscreensaver-data xscreensaver-data-extra
-apt-get -y install mpg123 ffmpeg ffplay
+apt-get -y install mpg123 ffmpeg
 echo export SDL_VIDEODRIVER=x11 >> /root/.bashrc
 
 cat >> /etc/X11/xorg.conf <<EOF
@@ -81,8 +83,9 @@ exit
 sudo umount $MNT
 ```
 
+Compile linux 
+
 ```shell
-# Linux
 export CROSS_COMPILE=/opt/riscv_rv64gc_linux/bin/riscv64-unknown-linux-gnu-
 git clone https://github.com/Dolu1990/litex-linux.git
 cd litex-linux
@@ -100,8 +103,8 @@ sudo cp arch/riscv/boot/Image $BOOT
 cd ..
 ```
 
+Compile OpenSbi
 ```shell
-# opensbi
 git clone https://github.com/litex-hub/opensbi --branch 1.3.1-linux-on-litex-vexriscv
 cd opensbi
 make CROSS_COMPILE=riscv-none-embed- PLATFORM=litex/vexriscv
@@ -112,17 +115,7 @@ sudo cp build/platform/litex/vexriscv/firmware/fw_jump.elf $BOOT/opensbi.elf
 cd ..
 ```
 
-
-
-```shell
-cp opensbi/build/platform/litex/vexriscv/firmware/fw_jump.bin ./opensbi.bin #Not necessary, but in case you need to debug <3
-cp opensbi/build/platform/litex/vexriscv/firmware/fw_jump.elf ./opensbi.elf
-cp litex-linux/vmlinux . #Not necessary, but in case you need to debug <3
-cp litex-linux/arch/riscv/boot/Image .
-```
-
-
-Pushing stuff on sdcard :
+setup a sdcard :
 
 ```shell
 (
@@ -147,10 +140,11 @@ echo w
 ) | sudo fdisk $SDCARD
 
 sudo mkfs.vfat ${SDCARD}1
-sudo dd if=debian-sid-risc-v-root.img of=${SDCARD}2 bs=64k iflag=fullblock oflag=direct conv=fsync status=progress
-```
 
-```shell
+# Copy rootfs
+sudo dd if=debian-sid-risc-v-root.img of=${SDCARD}2 bs=64k iflag=fullblock oflag=direct conv=fsync status=progress
+
+# copy boot files
 export BOOT=mnt2
 mkdir -p $BOOT
 sudo mount ${SDCARD}1 $BOOT
@@ -173,4 +167,15 @@ Got some issue installing packages (mpg123 which needs libasound2) :
 echo deb http://ftp.us.debian.org/debian sid main >> /etc/apt/sources.list
 apt-cache madison libasound2  libasound2-data
 apt install libasound2-data=1.2.9-2 libasound2=1.2.9-2
+```
+
+
+
+trash :
+
+```shell
+cp opensbi/build/platform/litex/vexriscv/firmware/fw_jump.bin ./opensbi.bin #Not necessary, but in case you need to debug <3
+cp opensbi/build/platform/litex/vexriscv/firmware/fw_jump.elf ./opensbi.elf
+cp litex-linux/vmlinux . #Not necessary, but in case you need to debug <3
+cp litex-linux/arch/riscv/boot/Image .
 ```
