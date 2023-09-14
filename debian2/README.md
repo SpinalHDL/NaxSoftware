@@ -1,10 +1,17 @@
-Based on https://wiki.debian.org/InstallingDebianOn/SiFive/%20HiFiveUnmatched
-But with some changes : 
-- Different partitions (for litex)
-- file images of rootfs, not the whole sdcard
+## Purpose of this readme 
+
+- How to create a debian rootfs with a few usefull packages
+- Compile a debian ready kernel
+- Compile opensbi (Litex)
+- Prepare the SDCARD
+
+The debian stuff is mostly based on based on https://wiki.debian.org/InstallingDebianOn/SiFive/%20HiFiveUnmatched, but with some changes : 
+- Different sdcard partitions setup (for litex)
+- Instead of making a full SDCARD image file, this readme create a rootfs image file.
 
 
-Create a Debian rootfs
+## Create a Debian rootfs
+
 ```shell
 export MNT=$PWD/mnt
 
@@ -31,6 +38,7 @@ sudo chroot $MNT
 
 # Update package information
 apt-get update
+apt-get --fix-broken install
 
 # Set up basic networking
 cat >>/etc/network/interfaces <<EOF
@@ -56,24 +64,31 @@ cat > /etc/fstab <<EOF
 EOF
 
 
-# Install a few things
-apt --fix-broken install
-apt-get install openssh-server openntpd ntpdate
+# Install networking stuff, note the PermitRootLogin to allow SSH root login
+apt-get -y install openssh-server openntpd ntpdate net-tools 
 sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/g' /etc/ssh/sshd_config
-apt-get -y install sl hdparm htop net-tools wget psmisc tmux kbd
+
+# Install a few utilities
+apt-get -y install sl hdparm htop wget psmisc tmux kbd usbutils
+
+# Install stuff allowing to compile stuff directly from the target
 apt-get -y install gcc git libncursesw5-dev autotools-dev autoconf automake build-essential
-apt-get -y install usbutils
+
+# x11 related stuff
 apt-get -y install xorg xserver-xorg-core xinit
 apt-get -y install twm wmaker
-apt-get -y install chocolate-doom openttd xscreensaver xscreensaver-data xscreensaver-data-extra
-apt-get -y install mpg123 ffmpeg
-echo export SDL_VIDEODRIVER=x11 >> /root/.bashrc
-
+# GLX is very very slow as soon as X11 app start to use pixel based buffer, need to disable it.
 cat >> /etc/X11/xorg.conf <<EOF
 Section "Extensions"
 	Option "GLX" "Disable"
 EndSection
 EOF
+
+# Multimedia
+apt-get -y install mpg123 ffmpeg
+apt-get -y install chocolate-doom openttd xscreensaver xscreensaver-data xscreensaver-data-extra
+echo export SDL_VIDEODRIVER=x11 >> /root/.bashrc
+
 
 apt-get clean
 
@@ -83,41 +98,71 @@ exit
 sudo umount $MNT
 ```
 
-Compile linux 
+Note that some debian rootfs out there disable the SBI HVC0 console. But by default it is enable.
+
+# Compile linux 
+
+To do so, you will need a riscv toolchain configured to target linux. To get one you can follow https://github.com/riscv-collab/riscv-gnu-toolchain :
 
 ```shell
-export CROSS_COMPILE=/opt/riscv_rv64gc_linux/bin/riscv64-unknown-linux-gnu-
-git clone https://github.com/Dolu1990/litex-linux.git
-cd litex-linux
-git checkout ae80e67c6b48bbedcd13db753237a25b3dec8301
-sed -i 's/SD_SLEEP_US       5/SD_SLEEP_US       0/g' drivers/mmc/host/litex_mmc.c
-cp $NAXRISCV/ext/NaxSoftware/debian2/linux/.config .config
-make -j$(nproc) ARCH=riscv oldconfig
-# optionally configure it further
-#make -j8 ARCH=riscv nconfig
-make -j$(nproc) ARCH=riscv all
-
-sudo cp vmlinux $BOOT #Not necessary, but in case you need to debug <3
-sudo cp arch/riscv/boot/Image $BOOT
-
+git clone https://github.com/riscv-collab/riscv-gnu-toolchain.git --recursive
+cd riscv-gnu-toolchain
+./configure --prefix=/opt/riscv_rv64gc_linux
+make -j$(nproc) linux
+sudo make install
 cd ..
 ```
 
-Compile OpenSbi
+Then you can compile the kernel :
+
+```shell
+git clone https://github.com/Dolu1990/litex-linux.git
+cd litex-linux
+git checkout ae80e67c6b48bbedcd13db753237a25b3dec8301
+# Increase speed by factor 10
+sed -i 's/SD_SLEEP_US       5/SD_SLEEP_US       0/g' drivers/mmc/host/litex_mmc.c
+cp $NAXRISCV/ext/NaxSoftware/debian2/linux/.config .config
+
+export CROSS_COMPILE=/opt/riscv_rv64gc_linux/bin/riscv64-unknown-linux-gnu-
+make -j$(nproc) ARCH=riscv oldconfig
+make -j$(nproc) ARCH=riscv all
+
+ls vmlinux               # Kernel elf (has symboles, usefull for debug)
+ls arch/riscv/boot/Image # Kernel binary
+
+cd ..
+unset CROSS_COMPILE
+```
+
+Sometime, on the make all, it will ask you if you want x,y packages, and some important one sometime turn themself off XD
+
+You realy need : 
+- CONFIG_SIFIVE_PLIC
+- CONFIG_RISCV_SBI_V01
+- CONFIG_RISCV_SBI
+- CONFIG_HVC_RISCV_SBI
+
+# Compile OpenSbi
+
 ```shell
 git clone https://github.com/litex-hub/opensbi --branch 1.3.1-linux-on-litex-vexriscv
 cd opensbi
 make CROSS_COMPILE=riscv-none-embed- PLATFORM=litex/vexriscv
 
-sudo cp build/platform/litex/vexriscv/firmware/fw_jump.bin $BOOT/opensbi.bin #Not necessary, but in case you need to debug <3
-sudo cp build/platform/litex/vexriscv/firmware/fw_jump.elf $BOOT/opensbi.elf
+ls build/platform/litex/vexriscv/firmware/fw_jump.bin 
+ls build/platform/litex/vexriscv/firmware/fw_jump.elf
 
 cd ..
 ```
 
-setup a sdcard :
+# setup a SDCARD :
 
 ```shell
+export SDCARD=/dev/???
+export SDCARD_P1=${SDCARD}1
+export SDCARD_P2=${SDCARD}2
+
+# Write the partition table
 (
 echo o
 echo n
@@ -139,29 +184,34 @@ echo p
 echo w
 ) | sudo fdisk $SDCARD
 
-sudo mkfs.vfat ${SDCARD}1
+sudo mkfs.vfat $SDCARD_P1
 
 # Copy rootfs
-sudo dd if=debian-sid-risc-v-root.img of=${SDCARD}2 bs=64k iflag=fullblock oflag=direct conv=fsync status=progress
+sudo dd if=debian-sid-risc-v-root.img of=$SDCARD_P2 bs=64k iflag=fullblock oflag=direct conv=fsync status=progress
 
 # copy boot files
-export BOOT=mnt2
+export BOOT=mnt_p1
 mkdir -p $BOOT
-sudo mount ${SDCARD}1 $BOOT
+sudo mount $SDCARD_P1 $BOOT
 sudo cp boot.json $BOOT
 sudo cp linux.dtb $BOOT
-sudo cp opensbi/build/platform/litex/vexriscv/firmware/fw_jump.bin $BOOT/opensbi.bin #Not necessary, but in case you need to debug <3
+sudo cp opensbi/build/platform/litex/vexriscv/firmware/fw_jump.bin $BOOT/opensbi.bin 
 sudo cp opensbi/build/platform/litex/vexriscv/firmware/fw_jump.elf $BOOT/opensbi.elf
-sudo cp litex-linux/vmlinux $BOOT #Not necessary, but in case you need to debug <3
+sudo cp litex-linux/vmlinux $BOOT 
 sudo cp litex-linux/arch/riscv/boot/Image $BOOT
 sudo umount $BOOT
 ```
 
 
-Tricks and tips:
+## Tricks and tips:
 
+### Package version issues
+Got some issue installing some packages (mpg123 which needs libasound2).
+- What happend is that libasound2 was only available in 1.2.9-1 while libasound2-data was already in 1.2.9.2
+- Reason was that the default debian package mirror wasn't updated
+- Hopefully, others mirror had the libasound2 1.2.9.2 version 
 
-Got some issue installing packages (mpg123 which needs libasound2) :
+Here is an example of fix :
 
 ```shell
 echo deb http://ftp.us.debian.org/debian sid main >> /etc/apt/sources.list
@@ -169,13 +219,30 @@ apt-cache madison libasound2  libasound2-data
 apt install libasound2-data=1.2.9-2 libasound2=1.2.9-2
 ```
 
+### Starting x11
 
-
-trash :
+Depending the packages installed, x11 will not start automaticaly by default. Here is how to run it manualy :
 
 ```shell
-cp opensbi/build/platform/litex/vexriscv/firmware/fw_jump.bin ./opensbi.bin #Not necessary, but in case you need to debug <3
-cp opensbi/build/platform/litex/vexriscv/firmware/fw_jump.elf ./opensbi.elf
-cp litex-linux/vmlinux . #Not necessary, but in case you need to debug <3
-cp litex-linux/arch/riscv/boot/Image .
+# Start x11
+xinit &
+# wait a bit
+
+# Start window manager
+export DISPLAY=:0
+wmaker &
+# wait a bit
 ```
+
+### x11 performances
+
+Another thing is that the x11 GLX extensions will destroy the pixel based framebuffer performances. 
+It need to be disabled as described in the "Create a Debian rootfs" chapter 
+
+### Sound
+
+Decently optimzed apps can run sound on a 100 Mhz RISC-V core, but if its "bloated" it will not go too well. 
+- /usr/games/chocolate-doom -nomusic -nosfx -nosound
+- /usr/games/openttd  -r 640x480 -b 8bpp-optimized -g -s null -m null
+
+mpg123 can run a MP3 file to an USB headset fine.
