@@ -155,7 +155,16 @@ ls build/platform/litex/vexriscv/firmware/fw_jump.elf
 cd ..
 ```
 
+# Generate a DTB from a DTS
+
+```shell
+dtc -O dtb -o pi/linux.dtb pi/linux.dts
+```
+
 # setup a SDCARD :
+
+This is based on the Digilent nexys video running a Litex SoC with dual core NaxRiscv.
+Note that you will need to adjust the linux.dtb to your board / config.
 
 ```shell
 export SDCARD=/dev/???
@@ -193,8 +202,8 @@ sudo dd if=debian-sid-risc-v-root.img of=$SDCARD_P2 bs=64k iflag=fullblock oflag
 export BOOT=mnt_p1
 mkdir -p $BOOT
 sudo mount $SDCARD_P1 $BOOT
-sudo cp boot.json $BOOT
-sudo cp linux.dtb $BOOT
+sudo cp p1/boot.json $BOOT
+sudo cp p1/linux.dtb $BOOT
 sudo cp opensbi/build/platform/litex/vexriscv/firmware/fw_jump.bin $BOOT/opensbi.bin 
 sudo cp opensbi/build/platform/litex/vexriscv/firmware/fw_jump.elf $BOOT/opensbi.elf
 sudo cp litex-linux/vmlinux $BOOT 
