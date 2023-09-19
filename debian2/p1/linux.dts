@@ -165,12 +165,6 @@
 			stride = <0xc80>;
 			format = "a8b8g8r8";
 		};
-
-		ohci@e0000000 {
-			compatible = "generic-ohci";
-			reg = <0xe0000000 0x1000>;
-			interrupts = <0x10>;
-		};
 	};
 
 	aliases {
