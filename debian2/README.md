@@ -9,7 +9,6 @@ The debian stuff is mostly based on based on https://wiki.debian.org/InstallingD
 - Different sdcard partitions setup (for litex)
 - Instead of making a full SDCARD image file, this readme create a rootfs image file.
 
-
 ## Create a Debian rootfs
 
 ```shell
@@ -72,7 +71,7 @@ sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/g' /etc/ssh/ssh
 apt-get -y install sl hdparm htop wget psmisc tmux kbd usbutils
 
 # Install stuff allowing to compile stuff directly from the target
-apt-get -y install gcc git libncursesw5-dev autotools-dev autoconf automake build-essential
+apt-get -y install gcc git libncursesw5-dev autotools-dev autoconf automake libtool build-essential
 
 # x11 related stuff
 apt-get -y install xorg xserver-xorg-core xinit
@@ -157,6 +156,9 @@ cd ..
 
 # Generate a DTB from a DTS
 
+For the digilent nexys video, using the litex soc : 
+- python3 -m litex_boards.targets.digilent_nexys_video --cpu-type=naxriscv  --bus-standard axi-lite --with-video-framebuffer --with-coherent-dma --with-sdcard --with-ethernet --xlen=64 --scala-args='rvc=true,rvf=true,rvd=true,alu-count=2,decode-count=2'  --with-jtag-tap --sys-clk-freq 100000000 --cpu-count 2 --build --load
+
 ```shell
 dtc -O dtb -o pi/linux.dtb pi/linux.dts
 ```
@@ -212,27 +214,39 @@ sudo umount $BOOT
 ```
 
 
-## Tricks and tips:
+# Tricks and tips:
 
-### Package version issues
+# Package version issues
 Got some issue installing some packages (mpg123 which needs libasound2).
 - What happend is that libasound2 was only available in 1.2.9-1 while libasound2-data was already in 1.2.9.2
 - Reason was that the default debian package mirror wasn't updated
 - Hopefully, others mirror had the libasound2 1.2.9.2 version 
 
+You can look online for globaly available versions : 
+- https://packages.debian.org/search?suite=sid&arch=riscv64&searchon=names&keywords=libasound2
+- https://packages.debian.org/sid/libasound2 # On the bottom, you can see supported architectures
+- https://packages.debian.org/sid/riscv64/libasound2/download # Will lead you to the mirrors that you can add to the /etc/apt/sources.list
+
+Note that for RISC-V so far, you need to look into the debian "sid" suite (kinda the debian dev/unstable branch), as RISC-V isn't yet mainstream for debian.
+
 Here is an example of fix :
 
 ```shell
+# Add a mirror to the APT source list
 echo deb http://ftp.us.debian.org/debian sid main >> /etc/apt/sources.list
+
+# Check available version, relative to the /etc/apt/sources.list mirror list
 apt-cache madison libasound2  libasound2-data
-apt install libasound2-data=1.2.9-2 libasound2=1.2.9-2
+
+# Install a specific version of the problematic packages
+apt install libasound2-data=1.2.9-2 libasound2=1.2.9-2 
 ```
 
-### Starting x11
+# Starting x11
 
 Depending the packages installed, x11 will not start automaticaly by default. Here is how to run it manualy :
 
-```shell
+```shell        
 # Start x11
 xinit &
 # wait a bit
@@ -243,15 +257,21 @@ wmaker &
 # wait a bit
 ```
 
-### x11 performances
+# x11 performances
 
 Another thing is that the x11 GLX extensions will destroy the pixel based framebuffer performances. 
 It need to be disabled as described in the "Create a Debian rootfs" chapter 
 
-### Sound
+# Sound
 
 Decently optimzed apps can run sound on a 100 Mhz RISC-V core, but if its "bloated" it will not go too well. 
 - /usr/games/chocolate-doom -nomusic -nosfx -nosound
 - /usr/games/openttd  -r 640x480 -b 8bpp-optimized -g -s null -m null
 
 mpg123 can run a MP3 file to an USB headset fine.
+
+# Boot console
+
+In the linux DTS you have "console=tty1 earlycon=hvc0".
+
+This mean that the early phase of the linux kernel will use the opensbi provided terminal. Later, linux will switch to hvc0 which is aswell the opensbi provided terminal. 
