@@ -272,6 +272,9 @@ mpg123 can run a MP3 file to an USB headset fine.
 
 # Boot console
 
-In the linux DTS you have "console=tty1 earlycon=hvc0".
+In the linux DTS you have "console=hvc0 earlycon=hvc0".
 
-This mean that the early phase of the linux kernel will use the opensbi provided terminal. Later, linux will switch to hvc0 which is aswell the opensbi provided terminal. 
+This mean that the early phase of the linux kernel will use the opensbi provided terminal. Later, linux will switch to hvc0 which is aswell the opensbi provided terminal.
+Note that the liteuart driver seems ot have issues when it comes to debian, but things work fine with hvc0.
+
+If you want linux to use the framebuffer instead of hvc0, replace it with tty1.
