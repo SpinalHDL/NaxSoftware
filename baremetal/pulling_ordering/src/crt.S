@@ -3,177 +3,48 @@ _start:
 
 #include "../../driver/riscv_asm.h"
 #include "../../driver/sim_asm.h"
-#define delay_long() nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop
 
-#define trap_setup         \
-    la x1, 1f;              \
-    csrw mtvec, x1;         \
-    addi x1, x1, 0x123;      \
-    csrw mtval, x1;         \
+  csrr x1, mhartid
+  bnez x1, incrementer
 
-#define trap_handle        \
-    j fail;                 \
-    j fail;                 \
-    j fail;                 \
-    j fail;                 \
-1:                         \
-    csrr x1, mepc;          \
-    csrr x1, mcause;        \
-    csrr x1, mstatus;       \
-    csrr x1, mtval;           \
-    csrr x1, mip;           \
+  li x31, 100
 
-#define trap_handle_setup \
-    trap_handle    \
-    trap_setup     \
-
-.globl _start
-_start:
-
-#define HART_COUNT x29
-#define HART_MASK x30
-#define HART_ID x31
-#define REPEAT_COUNTER x20
-#define PTR x21
-
-  li HART_COUNT, 2 //UPDATE ME
-  li HART_MASK, 1  //UPDATE ME
-  csrr HART_ID, mhartid
-
-//io  -> iow  : OK
-//ior -> r    : Need to hold load from executing
-//w   -> w    : OK
-//w   -> ior  : Need to wait for SQ writeback
-//r   -> iow  : OK
-
-
-
-//Test amo with random timings
-  li REPEAT_COUNTER, 1000
-  la PTR, sharedE
-test_amo_delayed:
-  amoadd.w  x2,x1,(PTR)
-
-//Random delay
-  la x1, RANDOM
-  lw x1, 0(x1)
-  andi x1, x1, 0xF
-  addi x1, x1, 1
-  mul x1, x1, x1
 1:
-  addi x1, x1, -1
-  nop
-  bnez x1, 1b
+  //Slow load
+  la x1, data
+  li x2, 1
+  div x1, x1, x2
+  div x1, x1, x2
+  div x1, x1, x2
+  div x1, x1, x2
+  div x1, x1, x2
+  lw x10, 0(x1)
 
-  addi REPEAT_COUNTER, REPEAT_COUNTER, -1
-  bnez REPEAT_COUNTER, test_amo_delayed
+  //fast load
+  la x1, data
+  lw x11, 0(x1)
 
+  //Check ordering
+  blt x11, x10, fail
 
-
-
-// check if a lr.w pulling could lockup other thread from using a block
-test_lrsc_lockup:
-  li REPEAT_COUNTER, 100
-  la PTR, lrsc_lockup_data
-  bnez HART_ID, test_lrsc_lockup_store
-test_lrsc_lockup_lr:
-  lr.w	x1,(PTR)
-  beqz x1, test_lrsc_lockup_lr
-  j test_lrsc_lockup_done
-test_lrsc_lockup_store:
-  sw x0, 0(PTR)
-  addi REPEAT_COUNTER, REPEAT_COUNTER, -1
-  bnez REPEAT_COUNTER, test_lrsc_lockup_store
-  li x1, 1
-  sw x1, 0(PTR)
-
-test_lrsc_lockup_done:
-
-test_progress:
-  la PTR, sharedD
-  li REPEAT_COUNTER, 100
-1:
-  sw HART_ID, 0(PTR)
-  sw HART_ID, 0(PTR)
-  sw HART_ID, 0(PTR)
-  sw HART_ID, 0(PTR)
-  addi REPEAT_COUNTER, REPEAT_COUNTER, -1
-  bnez REPEAT_COUNTER, 1b
-
-test_lrsc:
-  li REPEAT_COUNTER, 100
-  mul x10, REPEAT_COUNTER, HART_COUNT
-  la PTR, sharedC
-  li x1, 1
-
-  lr.w	x2,(PTR)
-  mv x11, ra
-  call delay
-  call delay
-  mv ra, x11
-  sc.w	x3,x2,(PTR)
-1:
-  lr.w	x2,(PTR)
-  addi x2, x2, 1
-  sc.w	x3,x2,(PTR)
-  bnez x3, 1b
-  addi REPEAT_COUNTER, REPEAT_COUNTER, -1
-  bnez REPEAT_COUNTER, 1b
-  addi PTR, PTR, 4
-  amoadd.w  x2,x1,(PTR)
-2:
-  lw x1, 0(PTR)
-  bne x1, HART_COUNT, 2b
-  lw x1, -4(PTR)
-  bne x1, x10, fail
-  call delay
-
-
-test_amoadd:
-  li REPEAT_COUNTER, 100
-  mul x10, REPEAT_COUNTER, HART_COUNT
-  la PTR, sharedB
-  li x1, 1
-1:
-  amoadd.w  x2,x1,(PTR)
-  addi REPEAT_COUNTER, REPEAT_COUNTER, -1
-  bnez REPEAT_COUNTER, 1b
-  addi PTR, PTR, 4
-  amoadd.w  x2,x1,(PTR)
-2:
-  lw x1, 0(PTR)
-  bne x1, HART_COUNT, 2b
-  lw x1, -4(PTR)
-  bne x1, x10, fail
-  call delay
-
-
-
-  li REPEAT_COUNTER, 100
-  la PTR, sharedA
-test_lw_incr_sw:
-  mv x10, HART_ID
-1:
-  lw x1, 0(PTR)
-  and x2, x1, HART_MASK
-  bne x2, HART_ID, 1b
-  bne x1, x10, fail
-  add x10, x10, HART_COUNT
-  addi x1, x1, 1
-  sw x1, 0(PTR)
-  addi REPEAT_COUNTER, REPEAT_COUNTER, -1
-  bnez REPEAT_COUNTER, 1b
-
+  addi x31, x31, -1
+  bnez x31, 1b
   j pass
 
-
-
+incrementer:
+    la x1, data
+    li x2, 1
+1:
+    amoadd.w  x3, x2,(x1)
+    j 1b
 
 
 pass:
-  j pass
+    nop
+
 fail:
-  j fail
+    nop
+
 
 
 delay:
@@ -251,57 +122,6 @@ delay:
     nop
     ret
 
-.align 12
-sharedA:
-    .word 0x0
-sharedB:
-    .word 0x0
-    .word 0x0
-sharedC:
-    .word 0x0
-    .word 0x0
-sharedD:
-    .word 0x0
-    .word 0x0
-sharedE:
-    .word 0x0
-    .word 0x0
-lrsc_lockup_data:
-    .word 0x0
-.align 12
-fenceData:
-    .word 0x0
-    .word 0x0
-    .word 0x0
-    .word 0x0
-    .word 0x0
-    .word 0x0
-    .word 0x0
-    .word 0x0
-    .word 0x0
-    .word 0x0
-    .word 0x0
-    .word 0x0
-    .word 0x0
-    .word 0x0
-    .word 0x0
-    .word 0x0
-    .word 0x0
-    .word 0x0
-    .word 0x0
-    .word 0x0
-    .word 0x0
-    .word 0x0
-    .word 0x0
-    .word 0x0
-    .word 0x0
-    .word 0x0
-    .word 0x0
-    .word 0x0
-    .word 0x0
-    .word 0x0
-    .word 0x0
-    .word 0x0
 .align 12
 data:
     .word 0x27e91b60
@@ -817,5 +637,3 @@ data:
     .word 0xf16f1650
     .word 0xea196a7e
 
-floatOne:
-    .word 0x3f800000

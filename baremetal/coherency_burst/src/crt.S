@@ -30,11 +30,11 @@ _start:
 .globl _start
 _start:
 
+#define PTR x27
+#define REPEAT_COUNTER x28
 #define HART_COUNT x29
 #define HART_MASK x30
 #define HART_ID x31
-#define REPEAT_COUNTER x20
-#define PTR x21
 
   li HART_COUNT, 2 //UPDATE ME
   li HART_MASK, 1  //UPDATE ME
@@ -49,124 +49,39 @@ _start:
 
 
 //Test amo with random timings
-  li REPEAT_COUNTER, 1000
+  li REPEAT_COUNTER, 100000
   la PTR, sharedE
-test_amo_delayed:
-  amoadd.w  x2,x1,(PTR)
-
-//Random delay
-  la x1, RANDOM
-  lw x1, 0(x1)
-  andi x1, x1, 0xF
-  addi x1, x1, 1
-  mul x1, x1, x1
-1:
-  addi x1, x1, -1
-  nop
-  bnez x1, 1b
-
+  la x20, data
+  li x21, 8*1024-4
+  la x22, RANDOM
+  li x23, 1
+loop:
   addi REPEAT_COUNTER, REPEAT_COUNTER, -1
-  bnez REPEAT_COUNTER, test_amo_delayed
+  beqz REPEAT_COUNTER, pass
 
+  //random address in x1
+  lw x1, 0(x22)
+  and x1, x1, x21
+  add x1, x1, x20
+  lw x2, 0(x22)
+  and x2, x2, x21
+  add x2, x2, x20
+  lw x3, 0(x22)
+  and x3, x3, x21
+  add x3, x3, x20
+  lw x4, 0(x22)
+  and x4, x4, x21
+  add x4, x4, x20
 
-
-
-// check if a lr.w pulling could lockup other thread from using a block
-test_lrsc_lockup:
-  li REPEAT_COUNTER, 100
-  la PTR, lrsc_lockup_data
-  bnez HART_ID, test_lrsc_lockup_store
-test_lrsc_lockup_lr:
-  lr.w	x1,(PTR)
-  beqz x1, test_lrsc_lockup_lr
-  j test_lrsc_lockup_done
-test_lrsc_lockup_store:
-  sw x0, 0(PTR)
-  addi REPEAT_COUNTER, REPEAT_COUNTER, -1
-  bnez REPEAT_COUNTER, test_lrsc_lockup_store
-  li x1, 1
-  sw x1, 0(PTR)
-
-test_lrsc_lockup_done:
-
-test_progress:
-  la PTR, sharedD
-  li REPEAT_COUNTER, 100
-1:
-  sw HART_ID, 0(PTR)
-  sw HART_ID, 0(PTR)
-  sw HART_ID, 0(PTR)
-  sw HART_ID, 0(PTR)
-  addi REPEAT_COUNTER, REPEAT_COUNTER, -1
-  bnez REPEAT_COUNTER, 1b
-
-test_lrsc:
-  li REPEAT_COUNTER, 100
-  mul x10, REPEAT_COUNTER, HART_COUNT
-  la PTR, sharedC
-  li x1, 1
-
-  lr.w	x2,(PTR)
-  mv x11, ra
-  call delay
-  call delay
-  mv ra, x11
-  sc.w	x3,x2,(PTR)
-1:
-  lr.w	x2,(PTR)
-  addi x2, x2, 1
-  sc.w	x3,x2,(PTR)
-  bnez x3, 1b
-  addi REPEAT_COUNTER, REPEAT_COUNTER, -1
-  bnez REPEAT_COUNTER, 1b
-  addi PTR, PTR, 4
-  amoadd.w  x2,x1,(PTR)
-2:
-  lw x1, 0(PTR)
-  bne x1, HART_COUNT, 2b
-  lw x1, -4(PTR)
-  bne x1, x10, fail
-  call delay
-
-
-test_amoadd:
-  li REPEAT_COUNTER, 100
-  mul x10, REPEAT_COUNTER, HART_COUNT
-  la PTR, sharedB
-  li x1, 1
-1:
-  amoadd.w  x2,x1,(PTR)
-  addi REPEAT_COUNTER, REPEAT_COUNTER, -1
-  bnez REPEAT_COUNTER, 1b
-  addi PTR, PTR, 4
-  amoadd.w  x2,x1,(PTR)
-2:
-  lw x1, 0(PTR)
-  bne x1, HART_COUNT, 2b
-  lw x1, -4(PTR)
-  bne x1, x10, fail
-  call delay
-
-
-
-  li REPEAT_COUNTER, 100
-  la PTR, sharedA
-test_lw_incr_sw:
-  mv x10, HART_ID
-1:
-  lw x1, 0(PTR)
-  and x2, x1, HART_MASK
-  bne x2, HART_ID, 1b
-  bne x1, x10, fail
-  add x10, x10, HART_COUNT
-  addi x1, x1, 1
-  sw x1, 0(PTR)
-  addi REPEAT_COUNTER, REPEAT_COUNTER, -1
-  bnez REPEAT_COUNTER, 1b
-
-  j pass
-
-
+  lw x12, 0(x2)
+  amoadd.w  x1,x23,(x1)
+  lw x13, 0(x3)
+  addi x13, x13, 1
+  sw x13, 0(x3)
+  lr.w	x14,(x4)
+  addi x14, x14, 1
+  sc.w	x14,x14,(x4)
+  j loop
 
 
 
