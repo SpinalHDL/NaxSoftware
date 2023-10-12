@@ -278,3 +278,9 @@ This mean that the early phase of the linux kernel will use the opensbi provided
 Note that the liteuart driver seems ot have issues when it comes to debian, but things work fine with hvc0.
 
 If you want linux to use the framebuffer instead of hvc0, replace it with tty1.
+
+Extra packages
+
+```shell
+apt install libaa-bin ace-of-penguins numptyphysics sopwith
+```
