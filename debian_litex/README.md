@@ -144,12 +144,12 @@ You realy need :
 # Compile OpenSbi
 
 ```shell
-git clone https://github.com/litex-hub/opensbi --branch 1.3.1-linux-on-litex-vexriscv
+git clone https://github.com/Dolu1990/opensbi.git --branch litex-naxriscv
 cd opensbi
-make CROSS_COMPILE=riscv-none-embed- PLATFORM=litex/vexriscv
+make CROSS_COMPILE=riscv-none-embed- PLATFORM=litex/naxriscv
 
-ls build/platform/litex/vexriscv/firmware/fw_jump.bin 
-ls build/platform/litex/vexriscv/firmware/fw_jump.elf
+ls build/platform/litex/naxriscv/firmware/fw_jump.bin 
+ls build/platform/litex/naxriscv/firmware/fw_jump.elf
 
 cd ..
 ```
@@ -206,8 +206,8 @@ mkdir -p $BOOT
 sudo mount $SDCARD_P1 $BOOT
 sudo cp p1/boot.json $BOOT
 sudo cp p1/linux.dtb $BOOT
-sudo cp opensbi/build/platform/litex/vexriscv/firmware/fw_jump.bin $BOOT/opensbi.bin 
-sudo cp opensbi/build/platform/litex/vexriscv/firmware/fw_jump.elf $BOOT/opensbi.elf
+sudo cp opensbi/build/platform/litex/naxriscv/firmware/fw_jump.bin $BOOT/opensbi.bin 
+sudo cp opensbi/build/platform/litex/naxriscv/firmware/fw_jump.elf $BOOT/opensbi.elf
 sudo cp litex-linux/vmlinux $BOOT 
 sudo cp litex-linux/arch/riscv/boot/Image $BOOT
 sudo umount $BOOT
