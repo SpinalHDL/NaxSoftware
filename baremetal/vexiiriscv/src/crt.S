@@ -5,6 +5,48 @@
 .globl _start
 _start:
 
+// Test ras
+    li x31, 100
+loop:
+    call 1f
+    delay()
+    call 1f
+    delay()
+    call 1f
+    delay()
+    addi x31, x31, -1
+    bnez x31, loop
+    j pass
+
+
+1: delay()
+   mv x30, ra
+   call 2f
+   mv ra, x30
+   ret
+
+2: delay()
+   ret
+
+
+// Test gshare with random jump
+//    li x31, 1000
+//loop:
+//    la x10, data
+//    andi x11, x31, 3
+//    slli x11, x11, 2
+//    add x10, x10, x11
+//    lw x1, 0(x10)
+//    andi x2, x1, 1
+//    bnez x2, 1f; delay(); 1:
+//    andi x2, x1, 2
+//    bnez x2, 1f; delay(); 1:
+//    addi x31, x31, -1
+//    bnez x31, loop
+//    j pass
+
+
+
     addi x1, x0, 0x0
     addi x1, x0, 0x1
     addi x1, x0, 0x2
@@ -29,8 +71,8 @@ fail:
 .align 12
 data:
     .word 0x27e91b60
-    .word 0xa656bbbb
-    .word 0x59014f57
+    .word 0xa656bbb1
+    .word 0x59014f52
     .word 0xe339e4d3
     .word 0x1546ce54
     .word 0xaa010ccf
