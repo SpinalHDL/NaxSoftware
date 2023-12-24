@@ -163,6 +163,8 @@ For the digilent nexys video, using the litex soc :
 dtc -O dtb -o pi/linux.dtb pi/linux.dts
 ```
 
+Note that 100 Mhz is realy at the limite and timing generaly endup with about -0.8 slack violation. In practice it will depend you dev kit. On my one it works just fine, but you may have to reduce the frequency.
+
 # setup a SDCARD :
 
 This is based on the Digilent nexys video running a Litex SoC with dual core NaxRiscv.
