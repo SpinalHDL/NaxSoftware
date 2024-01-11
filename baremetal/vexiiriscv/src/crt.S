@@ -5,6 +5,33 @@
 
 .globl _start
 _start:
+    // Setup timer interrupt
+    li x1, CLINT_CMP
+    li x2, 30000
+    sw x2, 0(x1)
+
+    // Setup machine interrupt
+    li x1, MIE_MTIE
+    csrw mie, x1
+    li x1, MSTATUS_MIE
+    csrw mstatus, x1
+    trap_setup
+    wfi
+trap_handle
+
+
+    j pass
+
+
+    nop;nop;nop;nop;
+    csrr x1, sstatus
+    nop;nop;nop;nop;
+    csrr x1, mstatus
+    nop;nop;nop;nop;
+    csrw mstatus,x1
+    nop;nop;nop;nop;
+    csrw sstatus,x1
+    nop;nop;nop;nop;
 
     csrwi mhpmevent3, 4
     beqz x0, 1f; nop; 1:
