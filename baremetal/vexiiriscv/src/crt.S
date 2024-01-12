@@ -5,6 +5,39 @@
 
 .globl _start
 _start:
+    li x10, PUTC
+    li x11, GETC
+
+    li x1, 'a'
+    sw x1, 0(x10)
+    li x1, 'b'
+    sw x1, 0(x10)
+    li x1, 'c'
+    sw x1, 0(x10)
+
+
+1:  lw x1, 0(x11)
+    blt x1, x0, 1b
+    sw x1, 0(x10)
+
+1:  lw x1, 0(x11)
+    blt x1, x0, 1b
+    sw x1, 0(x10)
+
+1:  lw x1, 0(x11)
+    blt x1, x0, 1b
+    sw x1, 0(x10)
+
+    li x1, 'd'
+    sw x1, 0(x10)
+    li x1, 'e'
+    sw x1, 0(x10)
+    li x1, 'f'
+    sw x1, 0(x10)
+
+1:  j 1b
+
+
     // Setup timer interrupt
     li x1, CLINT_CMP
     li x2, 30000
