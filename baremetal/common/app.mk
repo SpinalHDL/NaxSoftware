@@ -1,3 +1,3 @@
-LDSCRIPT?=../common/app.ld
+LDSCRIPT?=${STANDALONE}/common/app.ld
 CFLAGS += -DUSE_GP
-include ../common/asm.mk
+include ${STANDALONE}/common/asm.mk

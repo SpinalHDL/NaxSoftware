@@ -5,7 +5,7 @@ RISCV_OBJCOPY = $(RISCV_PATH)/bin/$(RISCV_NAME)-objcopy
 RISCV_OBJDUMP = $(RISCV_PATH)/bin/$(RISCV_NAME)-objdump
 RISCV_CLIB=$(RISCV_PATH)$(RISCV_NAME)/lib/
 RISCV_CC=$(RISCV_PATH)/bin/$(RISCV_NAME)-gcc
-LDSCRIPT?=../common/asm.ld
+LDSCRIPT?=${STANDALONE}/common/asm.ld
 
 MABI?=ilp32
 MARCH?=rv32i
@@ -95,7 +95,7 @@ clean:
 
 
 
-include ../common/all_arch.mk
+include ${STANDALONE}/common/all_arch.mk
 
 define LIST_ARCH
 $(1):
