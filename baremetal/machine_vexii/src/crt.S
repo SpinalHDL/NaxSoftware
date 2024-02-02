@@ -199,25 +199,56 @@ redoAll:
 2:  nop
 
 //TODO
- /*   trap_setup
-    li x1, MM_FAULT_ADDRESS
-    lw x1, 0(x1) //load fault
-    trap_handle
 
     trap_setup
-    li x1, IO_FAULT_ADDRESS
-    lw x1, 0(x1) //mmio load fault
+    li x1, PMA_FAULT_ADDRESS
+    jalr x1 //fetch fault
     trap_handle
 
-    trap_setup
-    li x1, IO_FAULT_ADDRESS
-    sw x1, 0(x1) //mmio store fault
-    trap_handle
-*/
     trap_setup
     li x1, MM_FAULT_ADDRESS
     jalr x1 //fetch fault
     trap_handle
+
+//Can't be tested via RVLS yet, as fetch doesn't care about IO region and goes as if it was a main
+//    trap_setup
+//    li x1, IO_FAULT_ADDRESS
+//    jalr x1 //fetch fault
+//    trap_handle
+
+
+    trap_setup
+    li x1, PMA_FAULT_ADDRESS
+    lw x1, 0(x1) //load fault
+    trap_handle
+
+    trap_setup
+    li x1, PMA_FAULT_ADDRESS
+    sw x1, 0x40(x1) //store fault
+    trap_handle
+
+// Cacheless LSU doesn't trap on this TODO
+//    trap_setup
+//    li x1, MM_FAULT_ADDRESS
+//    lw x1, 0(x1) //load fault
+//    trap_handle
+//
+//    trap_setup
+//    li x1, MM_FAULT_ADDRESS
+//    sw x1, 0x40(x1) //store fault
+//    trap_handle
+//
+//
+//   trap_setup
+//   li x1, IO_FAULT_ADDRESS
+//   lw x1, 0(x1) //mmio load fault
+//   trap_handle
+//
+//   trap_setup
+//   li x1, IO_FAULT_ADDRESS
+//   sw x1, 0(x1) //mmio store fault
+//   trap_handle
+
 
 
 // mret test
