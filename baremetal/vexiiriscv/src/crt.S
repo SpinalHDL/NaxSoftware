@@ -5,6 +5,148 @@
 
 .globl _start
 _start:
+
+
+    la x10, data
+    la x11, data2
+    la x12, data3
+    la x13, data4
+    li x15, 1
+
+
+    lw x1, 0x00(x10)
+    lw x1, 0x400(x10)
+
+    sw x1, 0x200(x10)
+    sw x1, 0x600(x10)
+    sw x1, -4(x10)
+    delay()
+    fence.i
+
+    lw x1, 0x00(x10)
+    sw x1, 0x00(x10)
+    delay()
+    div x1, x1, x1
+    sw x1, 0x00(x10)
+    delay()
+
+    // Simple load tests
+    lw x1, 0x00(x10)
+    delay()
+    lw x1, 0x04(x10)
+    delay()
+    lw x1, 0x44(x10)
+    delay()
+    lw x1, 0x04(x10)
+    delay()
+
+    // Store to load tests
+    addi x15, x15, 1
+    sw x15, 0x00(x10)
+    delay()
+    lw x1, 0x00(x10)
+
+    // store store to load
+    addi x16, x15, 2
+    addi x15, x15, 1
+    sw x15, 0x00(x10)
+    sw x16, 0x00(x10)
+    delay()
+    lw x1, 0x00(x10)
+    addi x15, x15, 1
+    delay()
+
+    // store to load fast
+    addi x15, x15, 1
+    sw x15, 0x00(x10)
+    lw x1, 0x00(x10)
+    delay()
+
+    addi x15, x15, 1
+    sw x15, 0x00(x10)
+    nop
+    lw x1, 0x00(x10)
+    delay()
+
+    addi x15, x15, 1
+    sw x15, 0x00(x10)
+    nop
+    nop
+    lw x1, 0x00(x10)
+    delay()
+
+    addi x15, x15, 1
+    sw x15, 0x00(x10)
+    nop
+    nop
+    nop
+    lw x1, 0x00(x10)
+    delay()
+
+
+    addi x15, x15, 1
+    sw x15, 0x00(x10)
+    nop
+    nop
+    nop
+    nop
+    lw x1, 0x00(x10)
+    delay()
+
+
+
+    addi x15, x15, 1
+    sw x15, 0x00(x10)
+    nop
+    nop
+    nop
+    nop
+    nop
+    lw x1, 0x00(x10)
+    delay()
+
+
+    addi x15, x15, 1
+    sw x15, 0x00(x10)
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    lw x1, 0x00(x10)
+    delay()
+
+    // load burst on miss
+    lw x1, 0x80(x10)
+    lw x1, 0x84(x10)
+    lw x1, 0x84(x10)
+    delay()
+    addi x15, x15, 3
+    addi x16, x15, -1
+    addi x17, x15, -2
+    sw x15, 0xC0(x10)
+    lw x1, 0xC0(x10)
+    sw x16, 0xC0(x10)
+
+
+
+    //Test multi 4k boundary
+    lw x1, 0(x10)
+    lw x1, 0(x11)
+    lw x1, 0(x12)
+    lw x1, 0(x13)
+    lw x1, 0(x10)
+    lw x1, 0(x11)
+    lw x1, 0(x12)
+    lw x1, 0(x13)
+
+    j pass
+
+
+
+
+// putc getc test
     li x10, PUTC
     li x11, GETC
 
@@ -36,6 +178,7 @@ _start:
     sw x1, 0(x10)
 
 1:  j 1b
+
 
 
     // Setup timer interrupt
@@ -723,6 +866,8 @@ data:
     .word 0xd121f00d
     .word 0xa6565f5e
     .word 0x16b66b5b
+    .align 12
+data2:
     .word 0x04882b41
     .word 0x8922eec5
     .word 0xf8e966be
@@ -735,6 +880,9 @@ data:
     .word 0x243d8b49
     .word 0x73460301
     .word 0x32542e21
+
+    .align 12
+data3:
     .word 0x23bd1221
     .word 0x6cfdbe8e
     .word 0x708f43f0
@@ -754,6 +902,9 @@ data:
     .word 0x21a0c686
     .word 0x7fa851f8
     .word 0xd53a5a0a
+
+    .align 12
+data4:
     .word 0x1495d212
     .word 0x26cb1963
     .word 0x2c386218
