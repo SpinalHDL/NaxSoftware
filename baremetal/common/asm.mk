@@ -1,4 +1,4 @@
-
+STANDALONE?=../
 RISCV_PATH?=/opt/riscv/
 RISCV_NAME = riscv64-unknown-elf
 RISCV_OBJCOPY = $(RISCV_PATH)/bin/$(RISCV_NAME)-objcopy
