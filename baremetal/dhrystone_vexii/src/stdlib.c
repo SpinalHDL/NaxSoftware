@@ -93,26 +93,26 @@ int putchar(int c){
 
 //See https://github.com/zephyrproject-rtos/meta-zephyr-sdk/issues/110
 //It does not interfere with the benchmark code.
-unsigned long long __divdi3 (unsigned long long numerator,unsigned  long long divisor)
-{
-    unsigned long long result = 0;
-    unsigned long long count = 0;
-    unsigned long long remainder = numerator;
-
-    while((divisor & 0x8000000000000000ll) == 0) {
-        divisor = divisor << 1;
-        count++;
-    }
-    while(remainder != 0) {
-        if(remainder >= divisor) {
-            remainder = remainder - divisor;
-            result = result | (1 << count);
-        }
-        if(count == 0) {
-            break;
-        }
-        divisor = divisor >> 1;
-        count--;
-    }
-    return result;
-}
+//unsigned long long __divdi3 (unsigned long long numerator,unsigned  long long divisor)
+//{
+//    unsigned long long result = 0;
+//    unsigned long long count = 0;
+//    unsigned long long remainder = numerator;
+//
+//    while((divisor & 0x8000000000000000ll) == 0) {
+//        divisor = divisor << 1;
+//        count++;
+//    }
+//    while(remainder != 0) {
+//        if(remainder >= divisor) {
+//            remainder = remainder - divisor;
+//            result = result | (1 << count);
+//        }
+//        if(count == 0) {
+//            break;
+//        }
+//        divisor = divisor >> 1;
+//        count--;
+//    }
+//    return result;
+//}
