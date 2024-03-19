@@ -9,18 +9,18 @@ _start:
     li a0, 0xca755a1b; ebreak
 
     //test step
-    li a0, 0xcdca2c83
-    li a0, 0xf517b9ee
+    li a0, 0x4dca2c83
+    li a0, 0x5517b9ee
 
     //Transmit the data address to the debugger
     la a0, data; ebreak
 
     //Test writing memory and cache flushes
     li a1, 0x44556677; sw a1, 4(a0); ebreak
-    flush_cache(); ebreak
+    /*flush_cache();*/ ebreak
 
     //Transmit the breakX address to the debugger
-    la a0, break1; la a1, break2; ebreak
+    la a0, break1; la a1, break2; la a2, break3;la a3, lb1; la a4, sb1; la a5, data; ebreak
 
     li a0, 5
     addi a0, a0, 1
@@ -38,16 +38,42 @@ break1:
 break2:
     addi a0, a0, 7
 
+    li a1, 0x00000000
+    li a2, 0x10000000
+    li a3, 0x20000000
 
-    j pass
+    la x10, data
+    li x1, 0x40302010
+    sw x1, 0(x10)
+break3:
+    addi a1, a1, 1
+    addi a2, a2, 1
+    addi a3, a3, 1
+    li a4, 0
+    li a5, 0
+    li a6, 0
+    lb a4, 0(x10)
+lb1:
+    lb a5, 1(x10) //wp 0x80001001 1 r
+    lb a6, 2(x10)
+    addi a4, a4, 1
+    addi a5, a5, 1
+    addi a6, a6, 1
+    sb a4, 0(x10)
+sb1:
+    sb a5, 1(x10)
+    sb a6, 2(x10)
+    j break3
 
-pass:
-    j pass
-fail:
     j fail
 
 
-.align 2
+fail:
+    j fail
+pass:
+    j pass
+
+.align 4
 data:
   .word 0x523ab3f1
   .word 0xf1ad9f75
