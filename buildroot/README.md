@@ -12,6 +12,15 @@ make BR2_EXTERNAL=$NAX_SOFTWARE/buildroot/ naxriscv_sim_defconfig
 make
 ```
 
+## Opensbi
+
+```
+git clone https://github.com/riscv-software-src/opensbi.git --branch  v0.8
+cd opensbi
+export CROSS_COMPILE=riscv64-unknown-elf-
+make PLATFORM_RISCV_XLEN=64 PLATFORM_RISCV_ABI=lp64d PLATFORM_RISCV_ISA=rv64gc PLATFORM=out-of-tree
+```
+
 ## How to run sim
 
 ```
