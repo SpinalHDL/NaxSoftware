@@ -120,7 +120,7 @@ cd litex-linux
 git checkout ae80e67c6b48bbedcd13db753237a25b3dec8301
 # Increase speed by factor 10
 sed -i 's/SD_SLEEP_US       5/SD_SLEEP_US       0/g' drivers/mmc/host/litex_mmc.c
-cp $NAXRISCV/ext/NaxSoftware/debian2/linux/.config .config
+cp $NAXRISCV/ext/NaxSoftware/debian_litex/linux/.config .config
 
 export CROSS_COMPILE=/opt/riscv_rv64gc_linux/bin/riscv64-unknown-linux-gnu-
 make -j$(nproc) ARCH=riscv oldconfig
