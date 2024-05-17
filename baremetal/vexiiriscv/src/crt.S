@@ -5,14 +5,308 @@
 
 .globl _start
 _start:
+   	lui	a4,0x78601
+    slli	a4,a4,0x1
 
+    li x1, 1 << 13 //enable FS
+    csrw mstatus, x1
+    la x10, data_float
+    delay()
+    lw x1, 0(x10)
+    sw x1, 0(x10)
+    delay()
+/*
+.align 4
+    csrwi   frm, 2
+    fcvt.s.w        ft1,ra
+
+    li x1, 2 << 13
+    csrc mstatus, x1
+    csrr x1, mstatus
+.align 3
+    nop
+    csrr x1, mstatus
+
+    li x1, 2 << 13
+    csrc mstatus, x1
+    csrr x1, mstatus
+    fmadd.s f1, f1, f1, f1
+    delay()
+    csrr x1, mstatus
+
+    li x1, 2 << 13
+    csrc mstatus, x1
+    csrr x1, mstatus
+.align 3
+    fmadd.s f1, f1, f1, f1
+    csrr x1, mstatus
+
+    fmv.s f2, f1
+
+    li x1, 0x3e7f7f7f
+    li x2, 0x007fffff
+    fmv.w.x  f1, x1
+    fmv.w.x  f2, x2
+    fdiv.s  f3,f1,f2,rtz
+    delay();
+
+    flw f1, 0(x10)
+    flw f2, 4(x10)
+    flw f3, 8(x10)
+    flw f4, 12(x10)
+    flw f5, 16(x10) //1.1
+    flw f6, 20(x10) //0.1
+    flw f7, 24(x10) //3.4028235e38
+    flw f8, 28(x10) //qnan
+    flw f9, 32(x10) //snan
+    nop
+    nop
+.align 6
+    li x1, 0x42
+    li x2, -0x42
+    fcvt.s.w f10, x1
+    fcvt.s.wu f11, x1
+    fcvt.s.w f12, x2
+    fcvt.s.wu f13, x2
+
+    fcvt.w.s  x1, f10
+    fcvt.wu.s x1, f11
+    fcvt.w.s  x2, f12
+    fcvt.wu.s x2, f13
+
+.align 6
+    csrrw x1, fcsr, x0
+    fdiv.s f10, f2, f5
+    csrr x1, fcsr
+    fle.s x1, f1, f2
+    fle.s x1, f2, f1
+    fle.s x1, f1, f1
+    flt.s x1, f1, f2
+    flt.s x1, f2, f1
+    flt.s x1, f1, f1
+    feq.s x1, f1, f2
+    feq.s x1, f2, f1
+    feq.s x1, f1, f1
+    fmin.s f10, f1, f2
+    fmin.s f10, f2, f1
+    fmin.s f10, f1, f1
+    fmax.s f10, f1, f2
+    fmax.s f10, f2, f1
+
+    csrrw x1, fcsr, x0
+    fmax.s f10, f1, f2
+    csrrw x1, fcsr, x0
+    fmax.s f10, f1, f8
+    csrrw x1, fcsr, x0
+    fmax.s f10, f1, f9
+    csrrw x1, fcsr, x0
+    fmax.s f10, f8, f2
+    csrrw x1, fcsr, x0
+    fmax.s f10, f9, f2
+    csrrw x1, fcsr, x0
+    fmax.s f10, f8, f9
+    csrrw x1, fcsr, x0
+    fmax.s f10, f9, f8
+    csrrw x1, fcsr, x0
+    fmax.s f10, f9, f9
+    csrrw x1, fcsr, x0
+    fmax.s f10, f8, f8
+    csrrw x1, fcsr, x0
+
+
+    fmv.x.w x1, f5
+    fmv.w.x f5, x1
+
+.align 6
+    fadd.s f10, f5, f6
+    fadd.s f10, f5, f6
+    fadd.s f10, f5, f6
+    fadd.s f10, f5, f6
+    fadd.s f10, f5, f6
+    fmadd.s f10, f5, f6, f2
+    fadd.s f10, f5, f6
+    fadd.s f10, f5, f6
+    fadd.s f10, f5, f6
+    fadd.s f10, f5, f6
+    fadd.s f10, f5, f6
+    fadd.s f10, f5, f6
+    fadd.s f10, f5, f6
+    fadd.s f10, f5, f6
+    delay()
+
+    nop
+    nop
+    mul x1, x1, x1
+    fsw f1, 64(x10)
+    delay()
+    fmul.s f10, f2, f5
+    fmul.s f10, f10, f5
+    fmul.s f10, f10, f5
+    fsw f10, 68(x10)
+    fsqrt.s f10, f5
+    fsw f10, 72(x10)
+    delay()
+    fmul.s f10, f1, f2
+    fmul.s f10, f1, f2
+    fmul.s f10, f1, f2
+    fmul.s f10, f1, f2
+    fmul.s f10, f1, f2
+    fmul.s f10, f1, f2
+    fmul.s f10, f1, f2
+    fsqrt.s f10, f5
+    fmul.s f10, f1, f2
+    fmul.s f10, f1, f2
+    fmul.s f10, f1, f6
+    delay()
+
+    li x1, 100
+1:  fmul.s f10, f10, f6
+    fadd.s f11, f10, f10
+    fsub.s f11, f10, f10
+    fmadd.s f12, f10, f6, f10
+    fmsub.s f12, f10, f6, f10
+    fnmsub.s f12, f10, f6, f10
+    fnmadd.s f12, f10, f6, f10
+    fclass.s x2, f10
+    //fsqrt.s f12, f10
+    addi x1, x1, -1
+    bnez x1, 1b
+*/
+    j pass
 
     la x10, data
     la x11, data2
     la x12, data3
     la x13, data4
-    li x15, 1
+    li x20, 1
+    li x21, 2
+    li x22, 3
+    li x23, 4
+    li x24, 5
+    li x25, 6
 
+    li a1, 0x00000000
+    li a2, 0x10000000
+    li a3, 0x20000000
+
+    li x1, 0x40302010
+    sw x1, 0(x10)
+1:  addi a1, a1, 1
+    addi a2, a2, 1
+    addi a3, a3, 1
+    li a4, 0
+    li a5, 0
+    li a6, 0
+    lb a4, 0(x10)
+    lb a5, 1(x10) //wp 0x80001001 1 r
+    lb a6, 2(x10)
+    addi a4, a4, 1
+    addi a5, a5, 1
+    addi a6, a6, 1
+    sb a4, 0(x10)
+    sb a5, 1(x10)
+    sb a6, 2(x10)
+    j 1b
+
+
+
+    csrrw x0, mscratch, x0
+    csrrw x0, mscratch, x0
+    csrrw x0, mscratch, x0
+    csrrw x0, mscratch, x0
+    csrrw x0, mscratch, x0
+    csrrw x0, mscratch, x0
+    csrrw x0, mscratch, x0
+    csrrw x0, mscratch, x0
+    csrrw x0, mscratch, x0
+    j pass
+
+#define writeLine()  \
+sb x20, 0x00(x10);sb x20, 0x04(x10);sb x20, 0x08(x10);sb x20, 0x0c(x10); \
+sb x20, 0x10(x10);sb x20, 0x14(x10);sb x20, 0x18(x10);sb x20, 0x1c(x10); \
+sb x20, 0x20(x10);sb x20, 0x24(x10);sb x20, 0x28(x10);sb x20, 0x2c(x10); \
+sb x20, 0x30(x10);sb x20, 0x34(x10);sb x20, 0x38(x10);sb x20, 0x3c(x10); \
+addi x10, x10, 0x40; \
+addi x20, x20, 0x1; \
+
+#define cpyLine()  \
+lw x20, 0x00(x11);lw x21, 0x04(x11);lw x22, 0x08(x11);lw x23, 0x0c(x11); \
+sw x20, 0x00(x10);sw x21, 0x04(x10);sw x22, 0x08(x10);sw x23, 0x0c(x10); \
+lw x20, 0x10(x11);lw x21, 0x14(x11);lw x22, 0x18(x11);lw x23, 0x1c(x11); \
+sw x20, 0x10(x10);sw x21, 0x14(x10);sw x22, 0x18(x10);sw x23, 0x1c(x10); \
+lw x20, 0x20(x11);lw x21, 0x24(x11);lw x22, 0x28(x11);lw x23, 0x2c(x11); \
+sw x20, 0x20(x10);sw x21, 0x24(x10);sw x22, 0x28(x10);sw x23, 0x2c(x10); \
+lw x20, 0x30(x11);lw x21, 0x34(x11);lw x22, 0x38(x11);lw x23, 0x3c(x11); \
+sw x20, 0x30(x10);sw x21, 0x34(x10);sw x22, 0x38(x10);sw x23, 0x3c(x10); \
+addi x10, x10, 0x40; \
+addi x11, x11, 0x40; \
+addi x20, x20, 0x1; \
+
+
+    li x11, 0x10100
+    add x11, x10, x11;
+    li x31, 0x1000
+1:
+    cpyLine();
+    cpyLine();
+    cpyLine();
+    cpyLine();
+
+
+    addi x31, x31, -1
+    bnez x31, 1b
+
+
+    li x31, 10
+1:  addi x31, x31, -1
+    bnez x31, 1b
+    j pass
+
+    li x31, 10
+1:
+    sb x20, 0(x10)
+    sb x21, 1(x10)
+    sb x22, 2(x10)
+    sb x23, 3(x10)
+    sb x24, 4(x10)
+    sb x25, 5(x10)
+    addi x10, x10,  6
+    addi x31, x31, -1
+    bnez x31, 1b
+
+
+    li x31, 100
+1:  addi x31, x31, -1
+    bnez x31, 1b
+    j pass
+
+//    lw x1, 0(x10)
+//    mv x2, x1
+//    mv x2, x1
+//    mv x2, x1
+//    mv x2, x1
+//    j pass
+
+//    lw x1, 0(x10)
+//    nop
+//    nop
+//    nop
+//    nop
+//    nop
+//    nop
+//    nop
+//    nop
+//    nop
+//    nop
+//    li x1, 4
+//    mul x1, x1, x1
+//    li x1, 5
+//    sw x1, 0(x10)
+//    j pass
+
+//    lw x1, 0x00(x10)
+//    sw x1, 0x00(x10)
+//    j pass
 
     lw x1, 0x00(x10)
     lw x1, 0x400(x10)
@@ -458,9 +752,11 @@ trap_handle
 
 pass:
     nop
+    j pass
 
 fail:
     nop
+    j fail
 
 
 
@@ -987,3 +1283,13 @@ data4:
     .word 0xf16f1650
     .word 0xea196a7e
 
+data_float:
+    .word 0x3f800000
+    .word 0x40000000
+    .word 0x40400000
+    .word 0x40800000
+    .word 0x3f8ccccd
+    .word 0x3dcccccd
+    .word 0x7f7fffff //3.4028235e38
+    .word 0x7fc00000 //quiet nan
+    .word 0x7f800042 //signaling nan
