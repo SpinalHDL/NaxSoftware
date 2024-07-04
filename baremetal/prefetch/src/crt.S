@@ -34,6 +34,33 @@
 
 .globl _start
 _start:
+
+
+// play
+    la x10, data+1
+    la x11, data
+    la x12, data+4096
+    .align 6
+    csrr x9, mcycle
+    li x1, 256
+play_loop:
+    LOAD x2, WORD*0(x11)
+    LOAD x2, WORD*0(x12)
+    addi x11, x11, WORD
+    addi x12, x12, WORD
+    addi x1, x1, -1
+    bnez x1, play_loop
+    csrr x8, mcycle
+    sub x8, x8, x9
+    li x1, PUT_HEX
+    STORE x8, WORD*0(x1)
+    li x1, PUTC
+    li x2, '\n'
+    STORE x2, WORD*0(x1)
+    STORE x2, WORD*0(x1)
+
+
+
     la x10, data+1
     la x11, data
     prefetch_r(x10); addi x10, x10, 64
@@ -224,6 +251,10 @@ fail:
     j fail
 
 
+
+
+benchmark:
+    a0
 
 .align 12
 data:
