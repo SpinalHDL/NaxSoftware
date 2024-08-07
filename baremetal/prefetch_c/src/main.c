@@ -5,7 +5,7 @@
 #define XLEN_T intptr_t
 void *mem = (void*)0x90000000;
 #define PREFETCHER_CTRL 0x7FF
-#define PREFETCHER_CTRL_DISABLE 1
+#define PREFETCHER_CTRL_DISABLE 2
 
 #define ASM_BENCH(name) extern void * name (void*, XLEN_T);
 
@@ -34,16 +34,23 @@ void benchmark(char* name, void *(*bench) (void*, XLEN_T), XLEN_T bytes){
 #define BENCH_BYTES 0x4000
 
 void run_tests(){
+//  benchmark("L 1x",   load_1x, BENCH_BYTES);
+//  benchmark("L 1x",   load_1x, BENCH_BYTES);
+//  benchmark("L 4x",   load_4x, BENCH_BYTES);
+//  benchmark("L 16x", load_16x, BENCH_BYTES);
+//  benchmark("L 16x", load_16x, BENCH_BYTES);
+
   benchmark("L 1x416s",   load_1x_416s, BENCH_BYTES/4);
   benchmark("L 1x512s",   load_1x_512s, BENCH_BYTES/4);
-  benchmark("S 1x512s",   store_1x_512s, BENCH_BYTES/4);
   benchmark("L 1x512ms",   load_1x_512ms, BENCH_BYTES/4);
-  benchmark("S 1x512ms",   store_1x_512ms, BENCH_BYTES/4);
   benchmark("L 1x",   load_1x, BENCH_BYTES);
   benchmark("L 1x",   load_1x, BENCH_BYTES);
   benchmark("L 4x",   load_4x, BENCH_BYTES);
   benchmark("L 16x", load_16x, BENCH_BYTES);
   benchmark("L 16x", load_16x, BENCH_BYTES*4);
+
+  benchmark("S 1x512s",   store_1x_512s, BENCH_BYTES/4);
+  benchmark("S 1x512ms",   store_1x_512ms, BENCH_BYTES/4);
   benchmark("S 1x" , store_1x, BENCH_BYTES);
   benchmark("S 4x" , store_4x, BENCH_BYTES);
   benchmark("S 16x",store_16x, BENCH_BYTES*4);
