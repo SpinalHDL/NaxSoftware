@@ -106,6 +106,12 @@
     supervisor_read
 
 
+#define supervisor_handle_trap_or_pass \
+    j 3f                ;\
+.align 4                ;\
+3:                      ;\
+    supervisor_read
+
 
 #define supervisor_check \
     supervisor_setup_trap \
