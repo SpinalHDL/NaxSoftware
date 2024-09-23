@@ -23,6 +23,18 @@
     csrr x1, mtval;           \
     csrr x1, mip;           \
 
+#define trap_handle_no_mtval_mepc        \
+    j fail;                 \
+    j fail;                 \
+    j fail;                 \
+    j fail;                 \
+.align 4;  \
+1:                         \
+    csrr x1, mcause;        \
+    csrr x1, mstatus;       \
+    csrr x1, mip;           \
+
+
 #define trap_handle_setup \
     trap_handle    \
     trap_setup     \

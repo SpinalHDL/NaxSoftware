@@ -42,7 +42,22 @@ _start:
     ecall
     trap_handle
 
+   // # Flipping just the MSB should result in an illegal address for RV64.
+   // trap_setup
+   // la t2, fail
+   // li t0, 1 << (__riscv_xlen - 1)
+   // xor t0, t0, t2
+   // jalr t2, t0
+   // j fail
+   // trap_handle_no_mtval_mepc
 
+   // # A load to an illegal address should not commit.
+   // trap_setup
+   // li t0, 1 << (__riscv_xlen - 1)
+   // xor t0, t0, t2
+   // lb t2, (t0)
+   // j fail
+   // trap_handle_no_mtval_mepc
 
     li x1, -1
     csrw mideleg, x1
