@@ -56,7 +56,7 @@ _start:
     csrr x1, fcsr
 
     //bad rounding trap
-    machine_setup_trap
+    trap_setup
     csrwi frm, 7
     li x1, -1
     fcvt.s.w f1, x1, rup
@@ -64,27 +64,27 @@ _start:
     fcvt.s.w f1, x1
     csrwi frm, 7
     fcvt.s.w f1, x1
-    machine_handle_trap
+    trap_handle
 
     //fpu disabled =>  trap
     fcvt.s.w f1, x1, rup
-    machine_setup_trap
+    trap_setup
     li x1, MSTATUS_FS_MASK
     csrc mstatus, x1
     fcvt.s.w f1, x1, rup
-    machine_handle_trap
+    trap_handle
 
-    machine_setup_trap
+    trap_setup
     csrr x1, fcsr
-    machine_handle_trap
+    trap_handle
 
-    machine_setup_trap
+    trap_setup
     csrr x1, frm
-    machine_handle_trap
+    trap_handle
 
-    machine_setup_trap
+    trap_setup
     csrr x1, fflags
-    machine_handle_trap
+    trap_handle
 
 
     j pass
