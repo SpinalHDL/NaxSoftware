@@ -1,6 +1,6 @@
 STANDALONE?=../
 RISCV_PATH?=/opt/riscv/
-RISCV_NAME = riscv64-unknown-elf
+RISCV_NAME?=riscv64-unknown-elf
 RISCV_OBJCOPY = $(RISCV_PATH)/bin/$(RISCV_NAME)-objcopy
 RISCV_OBJDUMP = $(RISCV_PATH)/bin/$(RISCV_NAME)-objdump
 RISCV_CLIB=$(RISCV_PATH)$(RISCV_NAME)/lib/

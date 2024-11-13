@@ -19,13 +19,19 @@
 OBJDIR?=build
 MARCH?=rv32im
 MABI?=ilp32
+RISCV_PATH?=/opt/riscv/
+RISCV_NAME?=riscv64-unknown-elf
+RISCV_OBJCOPY = $(RISCV_PATH)/bin/$(RISCV_NAME)-objcopy
+RISCV_OBJDUMP = $(RISCV_PATH)/bin/$(RISCV_NAME)-objdump
+RISCV_CLIB=$(RISCV_PATH)$(RISCV_NAME)/lib/
+RISCV_CC=$(RISCV_PATH)/bin/$(RISCV_NAME)-gcc
 
 # Flag : OUTFLAG
 #	Use this flag to define how to to get an executable (e.g -o)
 OUTFLAG= -o
 # Flag : CC
 #	Use this flag to define compiler to use
-CC = riscv64-unknown-elf-gcc
+CC=$(RISCV_CC)
 # Flag : CFLAGS
 #	Use this flag to define compiler options. Note, you can add compiler options from the command line using XCFLAGS="other flags"
 PORT_CFLAGS =  -DPERFORMANCE_RUN=1  -march=${MARCH} -mabi=${MABI} -mcmodel=medany -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast -I../driver
