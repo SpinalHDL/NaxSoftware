@@ -11,8 +11,8 @@ MABI?=ilp32
 MARCH?=rv32i
 
 
-CFLAGS  += -march=$(MARCH)  -mabi=$(MABI) -mcmodel=medany
-LDFLAGS += -march=$(MARCH)  -mabi=$(MABI) -mcmodel=medany
+CFLAGS  += -march=$(MARCH)_zicsr  -mabi=$(MABI) -mcmodel=medany
+LDFLAGS += -march=$(MARCH)_zicsr  -mabi=$(MABI) -mcmodel=medany
 
 ifeq ($(DEBUG),yes)
 ifneq ($(DEBUG_Og),yes)
