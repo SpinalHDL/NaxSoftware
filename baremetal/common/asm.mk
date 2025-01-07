@@ -10,9 +10,18 @@ LDSCRIPT?=${STANDALONE}/common/asm.ld
 MABI?=ilp32
 MARCH?=rv32i
 
+# Extract GCC major version
+GCC_VERSION_MAJOR := $(shell $(RISCV_CC) -dumpversion | cut -d. -f1)
 
-CFLAGS  += -march=$(MARCH)_zicsr  -mabi=$(MABI) -mcmodel=medany
-LDFLAGS += -march=$(MARCH)_zicsr  -mabi=$(MABI) -mcmodel=medany
+# Set MARCH_ZICSR based on GCC version
+ifeq ($(shell [ $(GCC_VERSION_MAJOR) -ge 12 ] && echo true),true)
+    MARCH_ZICSR := _zicsr
+else
+    MARCH_ZICSR :=
+endif
+
+CFLAGS  += -march=$(MARCH)$(MARCH_ZICSR) -mabi=$(MABI) -mcmodel=medany
+LDFLAGS += -march=$(MARCH)$(MARCH_ZICSR) -mabi=$(MABI) -mcmodel=medany
 
 ifeq ($(DEBUG),yes)
 ifneq ($(DEBUG_Og),yes)
