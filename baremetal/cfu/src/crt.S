@@ -19,7 +19,11 @@ _start:
 
     li x1, 0x80000000
     csrs 0xBC0, x1
-    opcode_R(CUSTOM0, 0x0, 0x00, x1, x1, x1) //x3 = cfu(x1, x2)
+    opcode_R(CUSTOM0, 0x6, 0x00, x2, x1, x1) //x3 = cfu(x1, x2)
+.align 6
+    opcode_R(CUSTOM0, 0x6, 0x00, x2, x1, x1) //x3 = cfu(x1, x2)
+    j test1
+    opcode_R(CUSTOM0, 0x7, 0x00, x2, x1, x1) //x3 = cfu(x1, x2)
 
 test1:
     li x1, 0x01234567
