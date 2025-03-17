@@ -84,7 +84,7 @@
 
 
 #define machine_to_user       \
-    la x1,1f                       ;\
+    la x1,523f                       ;\
     csrw mepc, x1                  ;\
     li x1, MSTATUS_MPP_USER        ;\
     csrw mstatus, x1               ;\
@@ -93,7 +93,7 @@
     j fail                         ;\
     j fail                         ;\
     j fail                         ;\
-1:                                 ;\
+523:                               ;\
     user_read
 
 #define machine_setup_trap \

@@ -11,8 +11,8 @@
 #define GETC (BASE + 0x40)
 #define INCR_COUNTER (BASE + 0x70)
 #define RANDOM (BASE + 0xA8)
-#define CMB_ADDRESS (BASE + 0x100)
-#define CMB_DATA (BASE + 0x108)
+#define CBM_ADDRESS (BASE + 0x100)
+#define CBM_DATA (BASE + 0x108)
 
 
 #define PMA_FAULT_ADDRESS 0x00000230
