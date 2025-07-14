@@ -57,6 +57,7 @@
 #define MSTATUS_FS_MASK (3 << 13)
 
 
+#define MSTATUS_MPP_MACHINE            0x00001800
 #define MSTATUS_MPP_SUPERVISOR         0x00000800
 #define MSTATUS_MPP_USER               0x00000000
 
@@ -73,6 +74,9 @@
 #define SSTATUS_UXL         0x0000000300000000
 #define SSTATUS64_SD        0x8000000000000000
 
+#define XENVCFG_CBIE_FLUSH 0x10
+#define XENVCFG_CBIE_OK 0x30
+#define XENVCFG_CBCFE_OK 0x40
 
 #define PMP_R     0x01
 #define PMP_W     0x02
