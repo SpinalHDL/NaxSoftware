@@ -296,6 +296,75 @@ check_supervisor_cbie_allowance:
   machine_handle_trap
 
 
+#if __riscv_xlen == 32
+  li x1, XENVCFG_CBCFE_OK | XENVCFG_CBIE_OK
+  csrw 0x30a, x1
+  machine_setup_trap; machine_to_supervisor
+setup_mmu:
+    la x1, MMU_TABLE_0 + 0x800
+    li x2, 0x80000000
+    srli x2, x2, 2
+    ori x2, x2, 0x0F | 0xC0
+    sw x2, 0(x1)
+
+
+    la x1, MMU_TABLE_0 + 0x804
+    li x2, 0x90000000
+    srli x2, x2, 2
+    ori x2, x2, 0x0F | 0xC0
+    sw x2, 0(x1)
+
+    //Enable the MMU
+    la x1, MMU_TABLE_0
+    srli x1, x1, 12
+    li x2, 0x80000000
+    or x1, x1, x2
+    sfence.vma
+    csrw satp, x1
+
+    addi x1, x1, 1
+
+mmu_test_no_side_effect:
+    la x1, 0x80400000
+    lw x2, 0(x1)
+    sw x2, 0(x1)
+    clean(x1)  //Should have no side effects
+    flush(x1)
+    invalidate(x1)
+
+    li x2, 1
+    sw x2, 0(x1)
+    flush(x1)
+
+    li x2, 2
+    sw x2, 0(x1)
+    flush(x1)
+
+    li x2, 3
+    sw x2, 0(x1)
+    flush(x1)
+
+    li x2, 4
+    sw x2, 0(x1)
+    clean(x1)
+
+    li x2, 5
+    sw x2, 0(x1)
+    clean(x1)
+
+    //li x2, 6
+    //sw x2, 0(x1)
+    //clean(x1)
+
+
+
+    ecall
+  machine_handle_trap
+
+  call delay
+
+#endif;
+
 
   j pass
 
@@ -388,3 +457,20 @@ data:
     .word 0xa656bbbb
     .word 0x59014f57
     .word 0xe339e4d3
+
+
+.align 12
+MMU_TABLE_0:
+.word 0
+
+.align 12
+MMU_TABLE_1:
+.word 0
+
+.align 12
+MMU_TABLE_2:
+.word 0
+
+.align 12
+MMU_TABLE_3:
+.word 0
