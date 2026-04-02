@@ -49,7 +49,7 @@ int _getpid(void) {
 }
 
 
-static char *miaou = 0x90000000;
+static char *miaou = (char*)0x90000000;
 
 void * _sbrk(ptrdiff_t increment) {
     char *prev_heap_end = miaou;
