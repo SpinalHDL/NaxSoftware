@@ -1,7 +1,7 @@
 #!/bin/bash
 
-FLAGS+=" -DISA=rv64imafdc"
-FLAGS+=" -DISA_STR=\"rv64imafdc\""
+ISA=(i m a f d c zicsr zifence)
+FLAGS+=" -DISA_BASE=\"rv64i\""
 FLAGS+=" -DXLEN=64"
 FLAGS+=" -DABI=lp64d"
 FLAGS+=" -DMMU_TYPE=\"riscv,sv39\""

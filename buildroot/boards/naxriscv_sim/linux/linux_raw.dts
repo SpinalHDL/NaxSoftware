@@ -3,43 +3,62 @@
 ##include <dt-bindings/input/input.h>
 ##include <dt-bindings/interrupt-controller/irq.h>
 
-
-
 / {
-    ##address-cells = <0x1>;
-    ##size-cells = <0x1>;
-    compatible = "spinal,naxriscv";
-    model = "spinal,naxriscv_sim";
+	compatible = "spinal,vexiiriscv";
+	##address-cells = <1>;
+	##size-cells = <1>;
 
-    chosen {
-        bootargs = "rootwait console=hvc0 earlycon=sbi root=/dev/ram0 init=/sbin/init";
-        linux,initrd-start = <0x81000000>;
-        linux,initrd-end =   <0x81800000>;
-    };
+	chosen {
+		bootargs = "rootwait console=hvc0 earlycon=sbi root=/dev/ram0 init=/sbin/init";
+		linux,initrd-start = <0x81000000>;
+		linux,initrd-end =   <0x81800000>;
+	};
 
-    cpus {
-        ##address-cells = <0x1>;
-        ##size-cells = <0x0>;
-        timebase-frequency = <100000000>;
-        cpu@0 {
-            device_type = "cpu";
-            compatible = "riscv";
-            riscv,isa = ISA_STR;
-            mmu-type = MMU_TYPE;
-            reg = <0>;
-            status = "okay";
-            L0: interrupt-controller {
-                ##interrupt-cells = <0x00000001>;
-                interrupt-controller;
-                compatible = "riscv,cpu-intc";
-            };
-        };
-    };
+	cpus {
+		##address-cells = <1>;
+		##size-cells = <0>;
+		timebase-frequency = <100000000>;
 
-    memory@80000000 {
-        device_type = "memory";
-        reg = <0x80400000 0x0FC00000>;
-    };
+		cpu@0 {
+			compatible = "spinal,vexiiriscv", "riscv";
+			reg = <0>;
+			device_type = "cpu";
+			mmu-type = MMU_TYPE;
+			riscv,isa-base = ISA_BASE;
+			riscv,isa-extensions = ISA_STR;
+
+			cpu0_intc: interrupt-controller {
+				compatible = "riscv,cpu-intc";
+				interrupt-controller;
+				##interrupt-cells = <1>;
+			};
+		};
+	};
+
+	memory@80000000 {
+		device_type = "memory";
+		reg = <0x80000000 0x40000000>;
+	};
+
+	soc {
+		compatible = "simple-bus";
+		##address-cells = <1>;
+		##size-cells = <1>;
+		ranges;
+
+		serial0: serial@10000000 {
+			compatible = "spinal,vexiiriscv-uart";
+			reg = <0x10000000 0x1000>;
+		};
+
+		clint: timer@10010000 {
+			compatible = "sifive,clint0";
+			reg = <0x10010000 0x10000>;
+			interrupts-extended = <&cpu0_intc 3>, <&cpu0_intc 7>;
+		};
+	};
+
+	poweroff {
+		compatible = "spinal-poweroff";
+	};
 };
-
-

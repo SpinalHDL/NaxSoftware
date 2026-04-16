@@ -1,0 +1,268 @@
+From b6bc48c67cfd17e713ab93b9c125c73f2b1ac5dc Mon Sep 17 00:00:00 2001
+From: Inochi Amaoto <inochiama@gmail.com>
+Date: Mon, 23 Mar 2026 09:26:38 +0800
+Subject: [PATCH] spinal sim related device
+
+Signed-off-by: Inochi Amaoto <inochiama@gmail.com>
+---
+ include/sbi_utils/serial/spinal-uart.h  | 23 ++++++++
+ lib/utils/reset/fdt_reset_spinal.c      | 61 +++++++++++++++++++++
+ lib/utils/reset/objects.mk              |  3 ++
+ lib/utils/serial/fdt_serial_spinalhdl.c | 36 +++++++++++++
+ lib/utils/serial/objects.mk             |  4 ++
+ lib/utils/serial/spinal-uart.c          | 72 +++++++++++++++++++++++++
+ 6 files changed, 199 insertions(+)
+ create mode 100644 include/sbi_utils/serial/spinal-uart.h
+ create mode 100644 lib/utils/reset/fdt_reset_spinal.c
+ create mode 100644 lib/utils/serial/fdt_serial_spinalhdl.c
+ create mode 100644 lib/utils/serial/spinal-uart.c
+
+diff --git a/include/sbi_utils/serial/spinal-uart.h b/include/sbi_utils/serial/spinal-uart.h
+new file mode 100644
+index 00000000..6387801e
+--- /dev/null
++++ b/include/sbi_utils/serial/spinal-uart.h
+@@ -0,0 +1,23 @@
++/*
++ * SPDX-License-Identifier: BSD-2-Clause
++ *
++ * Copyright (c) 2019 Western Digital Corporation or its affiliates.
++ *
++ * Authors:
++ *   Anup Patel <anup.patel@wdc.com>
++ */
++
++#ifndef __SERIAL_UART8250_H__
++#define __SERIAL_UART8250_H__
++
++#include <sbi/sbi_types.h>
++
++#define UART_CAP_UUE	BIT(0)	/* Check UUE capability for XScale PXA UARTs */
++
++struct spinal_uart_device {
++	volatile char *base;
++};
++
++int spinal_uart_init(unsigned long base);
++
++#endif
+diff --git a/lib/utils/reset/fdt_reset_spinal.c b/lib/utils/reset/fdt_reset_spinal.c
+new file mode 100644
+index 00000000..9a9b4c23
+--- /dev/null
++++ b/lib/utils/reset/fdt_reset_spinal.c
+@@ -0,0 +1,61 @@
++/*
++ * SPDX-License-Identifier: BSD-2-Clause
++ *
++ * Copyright (c) 2023 Ventana Micro Systems Inc.
++ *
++ * Authors:
++ *   Anup Patel <apatel@ventanamicro.com>
++ */
++
++#include "sbi/riscv_asm.h"
++#include "sbi/sbi_types.h"
++#include <libfdt.h>
++#include <sbi/sbi_ecall_interface.h>
++#include <sbi/sbi_error.h>
++#include <sbi/sbi_hart.h>
++#include <sbi/sbi_system.h>
++#include <sbi_utils/fdt/fdt_driver.h>
++#include <sbi_utils/fdt/fdt_helper.h>
++#include <sbi_utils/regmap/fdt_regmap.h>
++
++__noreturn void spinal_do_poweroff_pass(void)
++{
++	while (1)
++		wfi();
++
++	__builtin_unreachable();
++}
++
++static int spinal_poweroff_check(u32 type, u32 reason)
++{
++	return 1;
++}
++
++static void spinal_do_poweroff(u32 type, u32 reason)
++{
++	spinal_do_poweroff_pass();
++}
++
++static struct sbi_system_reset_device spinal_poweroff = {
++	.name = "spinal-poweroff",
++	.system_reset_check = spinal_poweroff_check,
++	.system_reset = spinal_do_poweroff
++};
++
++static int spinal_reset_init(const void *fdt, int nodeoff,
++			     const struct fdt_match *match)
++{
++	sbi_system_reset_add_device(&spinal_poweroff);
++
++	return 0;
++}
++
++static const struct fdt_match spinal_poweroff_match[] = {
++	{ .compatible = "spinal-poweroff", .data = (const void *)false },
++	{ },
++};
++
++const struct fdt_driver fdt_reset_spinal = {
++	.match_table = spinal_poweroff_match,
++	.init = spinal_reset_init,
++};
+diff --git a/lib/utils/reset/objects.mk b/lib/utils/reset/objects.mk
+index ac38b49d..fae2cec3 100644
+--- a/lib/utils/reset/objects.mk
++++ b/lib/utils/reset/objects.mk
+@@ -29,3 +29,6 @@ libsbiutils-objs-$(CONFIG_FDT_RESET_SYSCON) += reset/fdt_reset_syscon.o
+ 
+ carray-fdt_early_drivers-$(CONFIG_FDT_RESET_RPMI) += fdt_reset_rpmi
+ libsbiutils-objs-$(CONFIG_FDT_RESET_RPMI) += reset/fdt_reset_rpmi.o
++
++carray-fdt_early_drivers-y += fdt_reset_spinal
++libsbiutils-objs-y += reset/fdt_reset_spinal.o
+diff --git a/lib/utils/serial/fdt_serial_spinalhdl.c b/lib/utils/serial/fdt_serial_spinalhdl.c
+new file mode 100644
+index 00000000..9c209c78
+--- /dev/null
++++ b/lib/utils/serial/fdt_serial_spinalhdl.c
+@@ -0,0 +1,36 @@
++/*
++ * SPDX-License-Identifier: BSD-2-Clause
++ *
++ * Copyright (c) 2020 Western Digital Corporation or its affiliates.
++ *
++ * Authors:
++ *   Anup Patel <anup.patel@wdc.com>
++ */
++
++#include <sbi_utils/fdt/fdt_helper.h>
++#include <sbi_utils/serial/fdt_serial.h>
++#include <sbi_utils/serial/spinal-uart.h>
++
++
++static int serial_spinal_uart_init(const void *fdt, int nodeoff,
++				const struct fdt_match *match)
++{
++	struct platform_uart_data uart = { 0 };
++	int rc;
++
++	rc = fdt_parse_uart_node(fdt, nodeoff, &uart);
++	if (rc)
++		return rc;
++
++	return spinal_uart_init(uart.addr);
++}
++
++static const struct fdt_match serial_spinal_uart_match[] = {
++	{ .compatible = "spinal,vexiiriscv-uart" },
++	{ },
++};
++
++const struct fdt_driver fdt_serial_spinalhdl = {
++	.match_table = serial_spinal_uart_match,
++	.init = serial_spinal_uart_init,
++};
+diff --git a/lib/utils/serial/objects.mk b/lib/utils/serial/objects.mk
+index 7c973c83..a9154fec 100644
+--- a/lib/utils/serial/objects.mk
++++ b/lib/utils/serial/objects.mk
+@@ -37,6 +37,9 @@ libsbiutils-objs-$(CONFIG_FDT_SERIAL_UART8250) += serial/fdt_serial_uart8250.o
+ carray-fdt_serial_drivers-$(CONFIG_FDT_SERIAL_XILINX_UARTLITE) += fdt_serial_xlnx_uartlite
+ libsbiutils-objs-$(CONFIG_FDT_SERIAL_XILINX_UARTLITE) += serial/fdt_serial_xlnx_uartlite.o
+ 
++carray-fdt_serial_drivers-y += fdt_serial_spinalhdl
++libsbiutils-objs-y += serial/fdt_serial_spinalhdl.o
++
+ libsbiutils-objs-$(CONFIG_SERIAL_CADENCE) += serial/cadence-uart.o
+ libsbiutils-objs-$(CONFIG_SERIAL_GAISLER) += serial/gaisler-uart.o
+ libsbiutils-objs-$(CONFIG_SERIAL_RENESAS_SCIF) += serial/renesas_scif.o
+@@ -46,3 +49,4 @@ libsbiutils-objs-$(CONFIG_SERIAL_LITEX) += serial/litex-uart.o
+ libsbiutils-objs-$(CONFIG_SERIAL_UART8250) += serial/uart8250.o
+ libsbiutils-objs-$(CONFIG_SERIAL_XILINX_UARTLITE) += serial/xlnx-uartlite.o
+ libsbiutils-objs-$(CONFIG_SERIAL_SEMIHOSTING) += serial/semihosting.o
++libsbiutils-objs-y += serial/spinal-uart.o
+diff --git a/lib/utils/serial/spinal-uart.c b/lib/utils/serial/spinal-uart.c
+new file mode 100644
+index 00000000..7fcd1b1e
+--- /dev/null
++++ b/lib/utils/serial/spinal-uart.c
+@@ -0,0 +1,72 @@
++/*
++ * SPDX-License-Identifier: BSD-2-Clause
++ *
++ * Copyright (c) 2019 Western Digital Corporation or its affiliates.
++ *
++ * Authors:
++ *   Anup Patel <anup.patel@wdc.com>
++ */
++
++#include <sbi/riscv_asm.h>
++#include <sbi/riscv_io.h>
++#include <sbi/sbi_console.h>
++#include <sbi/sbi_domain.h>
++#include <sbi_utils/serial/spinal-uart.h>
++
++/* clang-format off */
++
++#define UART_PUTC_OFFSET	0x0
++#define UART_GETC_OFFSET	0x40
++#define UART_GETC_EMPTY_OFFSET	0x44
++
++/* clang-format on */
++
++static struct spinal_uart_device spinal_uart_dev;
++
++void spinal_uart_device_putc(struct spinal_uart_device *dev, char ch)
++{
++	writel(ch, (void*)dev->base + UART_PUTC_OFFSET);
++}
++
++static void spinal_uart_putc(char ch)
++{
++	return spinal_uart_device_putc(&spinal_uart_dev, ch);
++}
++
++int spinal_uart_device_getc(struct spinal_uart_device *dev)
++{
++	int ret;
++
++	if (readl(dev->base + UART_GETC_EMPTY_OFFSET)) {
++		return -1;
++	}
++
++	ret = readl(dev->base + UART_GETC_OFFSET);
++
++	return ret;
++}
++
++static int spinal_uart_getc(void)
++{
++	return spinal_uart_device_getc(&spinal_uart_dev);
++}
++
++static struct sbi_console_device spinal_uart_console = {
++	.name = "spinal",
++	.console_putc = spinal_uart_putc,
++	.console_getc = spinal_uart_getc
++};
++
++static void spinal_uart_device_init(struct spinal_uart_device *dev, unsigned long base)
++{
++	dev->base = (volatile char *)base;
++}
++
++int spinal_uart_init(unsigned long base)
++{
++	spinal_uart_device_init(&spinal_uart_dev, base);
++
++	sbi_console_set_device(&spinal_uart_console);
++
++	return 0;
++}
+-- 
+2.53.0
+

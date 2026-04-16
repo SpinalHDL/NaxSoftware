@@ -1,7 +1,7 @@
 #!/bin/bash
 
-FLAGS+=" -DISA=rv32imac"
-FLAGS+=" -DISA_STR=\"rv32imac\""
+ISA=(i m a c zicsr zifence)
+FLAGS+=" -DISA_BASE=\"rv32i\""
 FLAGS+=" -DXLEN=32"
 FLAGS+=" -DABI=ilp32"
 FLAGS+=" -DMMU_TYPE=\"riscv,sv32\""
