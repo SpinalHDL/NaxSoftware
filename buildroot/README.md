@@ -4,9 +4,8 @@
 ```
 cd $NAXRISCV/..
 export NAX_SOFTWARE=$NAXRISCV/ext/NaxSoftware
-git clone https://github.com/buildroot/buildroot.git --branch master
+git clone https://github.com/buildroot/buildroot.git --branch 2026.02.x
 cd buildroot
-git checkout 9ef54b7d
 $NAX_SOFTWARE/buildroot/naxriscv_sim_setup.sh rv32ima
 make BR2_EXTERNAL=$NAX_SOFTWARE/buildroot/ naxriscv_sim_defconfig
 make
