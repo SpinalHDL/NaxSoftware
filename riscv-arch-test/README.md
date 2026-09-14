@@ -22,7 +22,7 @@ With the compiler available we can update the test binaries:
 ```shell
 export PATH=/opt/riscv64-unknown-elf-gcc-2023.12.20/bin:$PATH
 # can be checked out somewhere else
-git clone https://github.com/riscv-non-isa/riscv-arch-test.git
+git clone https://github.com/riscv/riscv-arch-test
 cd riscv-arch-test
 git checkout 8a52b016dbe1e2733cc168b9d6e5c93e39059d4d
 cd ..
