@@ -3,7 +3,8 @@
 
 ### Preparation
 Install riscv-arch-test by reference https://github.com/riscv/riscv-arch-test#getting-started
-Note: the tested reference is `a5d6e023`
+
+Note: the tested reference is `887ca0885`
 
 
 ## Build tests
@@ -28,7 +29,7 @@ cd $VEXIIRISCV/
 # RV32
 mill 'Test[].runMain' vexiiriscv.tester.TestBenchServer \
   --xlen=32 \
-  --with-isa=g,c,s,u,b,zihpm,zicntr,smcntrpmf,sscofpmf,svade,zbkb,zbkx,zknd,zkne,zknh,zksed,zksh \
+  --with-isa=g,c,s,u,b,zfa,zfh,zfhmin,zihpm,zicntr,smcntrpmf,sscofpmf,svade,zbkb,zbkx,zknd,zkne,zknh,zksed,zksh \
   --performance-counters=29 \
   --pmp-size=16 \
   --asid-width=9 \
@@ -38,7 +39,7 @@ mill 'Test[].runMain' vexiiriscv.tester.TestBenchServer \
 # RV64
 mill 'Test[].runMain' vexiiriscv.tester.TestBenchServer \
   --xlen=64 \
-  --with-isa=g,c,s,u,b,zihpm,zicntr,smcntrpmf,sscofpmf,svade,zbkb,zbkx,zknd,zkne,zknh,zksed,zksh \
+  --with-isa=g,c,s,u,b,zfa,zfh,zfhmin,zihpm,zicntr,smcntrpmf,sscofpmf,svade,zbkb,zbkx,zknd,zkne,zknh,zksed,zksh \
   --performance-counters=29 \
   --pmp-size=16 \
   --asid-width=16 \
